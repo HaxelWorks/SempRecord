@@ -1,0 +1,13 @@
+USE_BLACKLIST: True
+BLACKLISTED_APPS:
+  - Google Chrome
+  - WhatsApp
+  - Messenger
+  - Discord
+  - To Do
+
+USE_AUTOSTART: True
+AUTOSTART_APPS:
+  - Visual Studio Code
+  - Github Desktop
+  - Autodesk Inventor Professional 2023

@@ -1,7 +1,8 @@
 # flask api example
 from flask import Flask, jsonify, request
 from flask_restful import Resource, Api
-from recorder import recorder
+from recorder import Recorder
+recorder = Recorder("xfghvlkjszncfhegvlszjcfhgoild")
 app = Flask(__name__)
 api = Api(app)
 
@@ -9,15 +10,25 @@ api = Api(app)
 def status():
     return jsonify(recorder.get_status())
 
+@app.route("/api/controls/start", methods=["POST"])
+def start():
+    recorder.start_recording()
+    return jsonify({"status":"started"})
 
+@app.route("/api/controls/stop", methods=["POST"])
+def stop():
+    recorder.stop_recording()
+    return jsonify({"status":"stopped"})
 
+@app.route("/api/controls/pause", methods=["POST"])
+def pause():
+    recorder.paused = True
+    return jsonify({"status":"paused"})
 
-# @app.route('/<int:number>/')
-# def incrementer(number):
-#     return "Incremented number is " + str(number+1)
+@app.route("/api/controls/resume", methods=["POST"])
+def resume():
+    recorder.paused = False
+    return jsonify({"status":"resumed"})
 
-# @app.route('/<string:name>/')
-# def hello(name):
-#     return "Hello " + name
 
 app.run()

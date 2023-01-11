@@ -7,25 +7,15 @@ import dxcam
 import ffmpeg
 import numpy as np
 from time import sleep
+from config import *
 
-
-# Config
-EXCLUDED_APPS = ["Google Chrome","WhatsApp","Messenger","Discord",]
-AUTO_START = ["Visual Studio Code"]
-FPS_TARGET = 15
-SPEED_MULTIPLIER = 4
-CHANGE_THRESHOLD = 400  # pixels
-VID_HEIGHT = 1440
-VID_WIDTH = 2560
-CODEC = "libx264"
-CODEC = "h264_nvenc"
 
 # Helper functions
 def isBlacklisted(app_name: str) -> bool:
     """Returns True if the app is blacklisted or no focus is on an app."""	
     if not app_name:
         return True
-    for excl in EXCLUDED_APPS:
+    for excl in BLACKLISTED_APPS:
         if app_name.endswith(excl):
             return True
     return False 
@@ -63,10 +53,10 @@ class Recorder:
                 f"{file_name}.mp4",
                 r=FILE_FPS,
                 vcodec=CODEC,
-                bitrate="1600k",
+                bitrate="2000k",
                 minrate="400k",
                 maxrate="4000k",
-                bufsize="8m",
+                bufsize="4m",
                 preset="slow",
                 temporal_aq=1,
                 pix_fmt="yuv420p",
@@ -120,9 +110,9 @@ class Recorder:
             sleep(0.5)
       
     def get_status(self):
-        # the self.status comes out as a string
-        # frame=  513 fps= 40 q=39.0 size=    1536kB time=00:00:08.50 bitrate=1480.4kbits/s dup=320 drop=0 speed=0.668x
-        # we want this as a dictionary
+        if self.stop.is_set():
+            return {}
+
         raw_stat = self.status.split(sep="=")
         raw_stat = [x.strip() for x in raw_stat]
         listed = []
@@ -136,10 +126,26 @@ class Recorder:
               
     def stop_recording(self):
         self.stop.set()
-        
+
+
+
+def start():
+    global active_recorder
+    active_recorder = Recorder("test")
+    
+def stop():
+    global active_recorder
+    active_recorder.stop_recording()
+ 
+def pause():
+    global active_recorder
+    active_recorder.paused = True
+  
+def unpause():
+    active_recorder = Recorder("test")
+
 if __name__	== "__main__":
-    recorder = Recorder("test")
     input("Press enter to stop recording")
-    recorder.stop_recording()
+    active_recorder.stop_recording()
     
     

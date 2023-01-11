@@ -1,0 +1,6 @@
+pystray
+dxcam
+pyyaml
+flask
+Pillow
+numpy

@@ -1,0 +1,24 @@
+{
+    "extends": "@tsconfig/svelte/tsconfig.json",
+    "compileOnSave": true,
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules/*",
+        "__sapper__/*",
+        "public/*"
+    ],
+    "compilerOptions": {
+        "forceConsistentCasingInFileNames": true,
+        "alwaysStrict": false,
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "moduleResolution": "node",
+        "types": [
+            "node",
+            "svelte"
+        ],
+    }
+}

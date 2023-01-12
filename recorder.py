@@ -7,15 +7,30 @@ import dxcam
 import ffmpeg
 import numpy as np
 from time import sleep
-from config import *
+from config import config, get_recording_dir
+
+# USER CHANGEABLE 
+RECORDING_FOLDER = get_recording_dir()
+VID_WIDTH = 2560
+VID_HEIGHT = 1440
+CODEC = "libx264" 
+CODEC = "h264_nvenc"
+FPS_TARGET = 15
+SPEED_MULTIPLIER = 4
+
+# DO NOT CHANGE
+CHANGE_THRESHOLD = 400  #sub-pixels
+THUMBNAIL_WIDTH = 320
+THUMBNAIL_HEIGHT = 180
 
 
+RECORDER = None
 # Helper functions
 def isBlacklisted(app_name: str) -> bool:
     """Returns True if the app is blacklisted or no focus is on an app."""	
     if not app_name:
         return True
-    for excl in BLACKLISTED_APPS:
+    for excl in config.get("BLACKLISTED_APPS"):
         if app_name.endswith(excl):
             return True
     return False 
@@ -35,7 +50,7 @@ def frameDiff(frame1, frame2):
 
 class Recorder:
     """Allows for continuous writing to a video file"""
-    def __init__(self,file_name:str):
+    def __init__(self,file_name:str,debug=False):
         """Starts the recording process"""
         FILE_FPS = FPS_TARGET * SPEED_MULTIPLIER
         # use ffmpeg pipe in
@@ -69,7 +84,7 @@ class Recorder:
         self.record_thread.start()
         self.status_thread = threading.Thread(target=self.status_thread, name="Status Thread", daemon=True)
         self.status_thread.start()
-        
+        self.debug = debug
     def recording_thread(self):
         cam = dxcam.create()
         cam.start(target_fps=FPS_TARGET)
@@ -105,7 +120,9 @@ class Recorder:
             if len(new_stat) > 1:
                 # if there is more than one line, the last line is the current status
                 self.status = buffer.decode("utf-8").strip()
-                # print(self.status)
+                if self.debug:
+                    print(self.status)
+                
                 buffer = new_stat[-1]
             sleep(0.5)
       
@@ -124,28 +141,27 @@ class Recorder:
             status[listed[i]] = listed[i+1]
         return status
               
-    def stop_recording(self):
+    def end_recording(self):
         self.stop.set()
 
 
 
 def start():
-    global active_recorder
-    active_recorder = Recorder("test")
+    global RECORDER
+    if RECORDER is None: 
+        RECORDER = Recorder("test")
+    if RECORDER.paused:
+        RECORDER.paused = False
     
 def stop():
-    global active_recorder
-    active_recorder.stop_recording()
- 
+    global RECORDER
+    RECORDER.end_recording()
+    RECORDER = None
 def pause():
-    global active_recorder
-    active_recorder.paused = True
+    global RECORDER
+    RECORDER.paused = True
   
-def unpause():
-    active_recorder = Recorder("test")
-
 if __name__	== "__main__":
+    RECORDER = Recorder("debug",debug=True)
     input("Press enter to stop recording")
-    active_recorder.stop_recording()
-    
-    
+    RECORDER.end_recording()

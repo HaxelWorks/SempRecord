@@ -17,7 +17,7 @@ def start():
 
 @app.route("/api/controls/stop", methods=["POST"])
 def stop():
-    recorder.stop_recording()
+    recorder.end_recording()
     return jsonify({"status":"stopped"})
 
 @app.route("/api/controls/pause", methods=["POST"])

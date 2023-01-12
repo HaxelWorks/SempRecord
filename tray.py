@@ -1,9 +1,7 @@
-import pystray as tray
+import pystray
 import os
 import recorder
 from icon_generator import ICONS
-
-
 
 
 # Create a menu with a Start/Stop and pause option
@@ -15,29 +13,34 @@ def open_folder():
 def open_browser():
     os.startfile("http://localhost:5000/")
 
-MENU = tray.Menu(
-    tray.MenuItem("Start", recorder.start),
-    tray.MenuItem("Stop", recorder.stop),
-    tray.MenuItem("Pause", recorder.pause),
-    tray.MenuItem("Open Folder", open_folder),
-    tray.MenuItem("Open Interface", open_browser),
+MENU = pystray.Menu(
+    pystray.MenuItem("Start", recorder.start),
+    pystray.MenuItem("Stop", recorder.stop),
+    pystray.MenuItem("Pause", recorder.pause),
+    pystray.MenuItem("Open Folder", open_folder),
+    pystray.MenuItem("Open Interface", open_browser),
 )
 
 # In order for the icon to be displayed, you must provide an icon
-icon = tray.Icon(
+TRAY = pystray.Icon(
     "SempRecord",
     icon=ICONS.inactive,
     menu=MENU,
     action=lambda: print("Hello World!"),
 )
     
+TRAY.run_detached()
 
 
-# To finally show you icon, call run
-icon.run_detached()
-import time
 
-time.sleep(4)
-icon.notify("test", "test message")
-icon.icon = ICONS.active
-input("Press enter to stop recording")
+if __name__ == "__main__":
+    # iterate through the various states of the recorder
+    from time import sleep
+    
+    for icon in dir(ICONS):
+        if icon.startswith("_"):
+            continue
+        TRAY.icon = getattr(ICONS, icon)
+        sleep(2)
+        
+    

@@ -1,6 +1,6 @@
 USE_BLACKLIST: True
 BLACKLISTED_APPS:
-  - Google Chrome
+  # - Google Chrome
   - WhatsApp
   - Messenger
   - Discord

@@ -13,6 +13,7 @@ import ffmpeg
 import numpy as np
 
 from config import config, get_recording_dir
+from video_barcode import Bardcoder
 # USER CHANGEABLE 
 RECORDING_FOLDER = get_recording_dir()
 VID_WIDTH = 2560
@@ -91,9 +92,8 @@ class Recorder:
         self.status_thread.start()
         
         self.debug = debug
-        self.iteration = 0
-        self.bar_buffer = []
-        self.bar_interval = 2
+        self.bardcoder = Bardcoder(2560,1440)
+
        
     def recording_thread(self):
         cam = dxcam.create()
@@ -112,35 +112,21 @@ class Recorder:
             if frameDiff(frame, last_frame) < CHANGE_THRESHOLD:
                 continue
            
-            self.line_squeezer(frame)
+            i = self.bardcoder.process_frame(frame)
+            if i:
+                print(i)
+            
         
             # Flush the frame to FFmpeg       
             self.process.stdin.write(frame.astype(np.uint8).tobytes()) # write to pipe
             last_frame = frame
-            self.iteration += 1    
+              
             
         cam.stop()
         self.process.stdin.close()
         self.process.wait()
-        
-    def line_squeezer(self, frame):
-        # ------TUMBNAIL_BARCODE------
-        if self.iteration % self.bar_interval == 0:
-            # squash the frame horizontally into a vertical line
-            bar = frame.mean(axis=0)
-            # Reduce the verctical size from 1440 to 180 by resampling
-            bar = bar[::8]
-            # Reduce the color depth to 8-bit
-            bar = bar.astype(np.uint8)
-            # Append the bar to the buffer             
-            self.bar_buffer.append(bar)
-            
-            if len(self.bar_buffer) > self.bar_interval:
-                # remove every other bar
-                self.bar_buffer = self.bar_buffer[::2]
-                # double the interval
-                self.bar_interval *= 2
-            
+         
+
     def status_thread(self):
         self.status = ""
         buffer = b""
@@ -178,14 +164,14 @@ class Recorder:
         self.stop.set()
         
         # ------TUMBNAIL_BARCODE------
-        columns = self.bar_buffer[-THUMB_W:] # take the last 320 columns
-        # melt the columns into a single array
-        columns = np.array(columns)
-        # save the thumbnail as a png using PIL
-        PIL.Image.fromarray(columns).save(self.file_name+".png")
-        # show the thumbnail
-        PIL.Image.fromarray(columns).show()
+        array = self.bardcoder.stack_barcodes()
+        # save the image using PIL
+        img = PIL.Image.fromarray(array)
+        # save the image to the current directory
+        img.save(self.file_name+".png")
         
+        
+        self.status_thread.join()   
         self.record_thread.join()
 
 

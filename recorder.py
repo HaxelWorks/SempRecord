@@ -1,14 +1,18 @@
-import pprint
+import os
 import threading
+from collections import Counter
 from ctypes import create_unicode_buffer, windll
+from time import sleep
 from typing import Optional
+import pathlib
+from shutil import move
+import PIL
 
 import dxcam
 import ffmpeg
 import numpy as np
-from time import sleep
-from config import config, get_recording_dir
 
+from config import config, get_recording_dir
 # USER CHANGEABLE 
 RECORDING_FOLDER = get_recording_dir()
 VID_WIDTH = 2560
@@ -19,12 +23,11 @@ FPS_TARGET = 15
 SPEED_MULTIPLIER = 4
 
 # DO NOT CHANGE
-CHANGE_THRESHOLD = 400  #sub-pixels
-THUMBNAIL_WIDTH = 320
-THUMBNAIL_HEIGHT = 180
+CHANGE_THRESHOLD = 3000  #sub-pixels
+THUMB_W = 320
+THUMB_H = VID_HEIGHT//8
 
 
-RECORDER = None
 # Helper functions
 def isBlacklisted(app_name: str) -> bool:
     """Returns True if the app is blacklisted or no focus is on an app."""	
@@ -50,10 +53,12 @@ def frameDiff(frame1, frame2):
 
 class Recorder:
     """Allows for continuous writing to a video file"""
-    def __init__(self,file_name:str,debug=False):
+    def __init__(self,file_name="temp",debug=False):
         """Starts the recording process"""
         FILE_FPS = FPS_TARGET * SPEED_MULTIPLIER
         # use ffmpeg pipe in
+        self.file_name = file_name
+        self.path = RECORDING_FOLDER / f"{file_name}.mp4"
         self.paused = False
         self.stop = threading.Event()
         self.process = (
@@ -65,7 +70,7 @@ class Recorder:
             )
             
             .output(
-                f"{file_name}.mp4",
+                self.file_name+".mp4",
                 r=FILE_FPS,
                 vcodec=CODEC,
                 bitrate="2000k",
@@ -84,7 +89,12 @@ class Recorder:
         self.record_thread.start()
         self.status_thread = threading.Thread(target=self.status_thread, name="Status Thread", daemon=True)
         self.status_thread.start()
+        
         self.debug = debug
+        self.iteration = 0
+        self.bar_buffer = []
+        self.bar_interval = 2
+       
     def recording_thread(self):
         cam = dxcam.create()
         cam.start(target_fps=FPS_TARGET)
@@ -92,22 +102,45 @@ class Recorder:
         
         while not self.stop.is_set():
             frame = cam.get_latest_frame()    
-            window = getForegroundWindowTitle()
-            
             if self.paused:
                 last_frame = frame
                 continue
-            if isBlacklisted(window):
+            
+            window_title = getForegroundWindowTitle()
+            if isBlacklisted(window_title):
                 continue
             if frameDiff(frame, last_frame) < CHANGE_THRESHOLD:
                 continue
-            
+           
+            self.line_squeezer(frame)
+        
+            # Flush the frame to FFmpeg       
             self.process.stdin.write(frame.astype(np.uint8).tobytes()) # write to pipe
             last_frame = frame
+            self.iteration += 1    
+            
         cam.stop()
         self.process.stdin.close()
         self.process.wait()
         
+    def line_squeezer(self, frame):
+        # ------TUMBNAIL_BARCODE------
+        if self.iteration % self.bar_interval == 0:
+            # squash the frame horizontally into a vertical line
+            bar = frame.mean(axis=0)
+            # Reduce the verctical size from 1440 to 180 by resampling
+            bar = bar[::8]
+            # Reduce the color depth to 8-bit
+            bar = bar.astype(np.uint8)
+            # Append the bar to the buffer             
+            self.bar_buffer.append(bar)
+            
+            if len(self.bar_buffer) > self.bar_interval:
+                # remove every other bar
+                self.bar_buffer = self.bar_buffer[::2]
+                # double the interval
+                self.bar_interval *= 2
+            
     def status_thread(self):
         self.status = ""
         buffer = b""
@@ -143,22 +176,38 @@ class Recorder:
               
     def end_recording(self):
         self.stop.set()
+        
+        # ------TUMBNAIL_BARCODE------
+        columns = self.bar_buffer[-THUMB_W:] # take the last 320 columns
+        # melt the columns into a single array
+        columns = np.array(columns)
+        # save the thumbnail as a png using PIL
+        PIL.Image.fromarray(columns).save(self.file_name+".png")
+        # show the thumbnail
+        PIL.Image.fromarray(columns).show()
+        
+        self.record_thread.join()
 
 
-
+# ==========INTERFACE==========
+RECORDER:Recorder = None
 def start():
     global RECORDER
     if RECORDER is None: 
-        RECORDER = Recorder("test")
+        RECORDER = Recorder(debug=True)
     if RECORDER.paused:
         RECORDER.paused = False
     
 def stop():
     global RECORDER
+    if RECORDER is None:
+        return
     RECORDER.end_recording()
     RECORDER = None
 def pause():
     global RECORDER
+    if RECORDER is None:
+        return
     RECORDER.paused = True
   
 if __name__	== "__main__":

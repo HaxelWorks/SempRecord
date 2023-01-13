@@ -1,6 +1,7 @@
+import config
 import recorder
 import tray
-import config
 import api
 
 
+tray.start()

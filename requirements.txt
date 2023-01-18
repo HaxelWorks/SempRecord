@@ -4,3 +4,4 @@ pyyaml
 flask
 Pillow
 numpy
+qoi

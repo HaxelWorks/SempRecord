@@ -43,16 +43,14 @@ def frameDiff(frame1, frame2):
     diff = diff.sum()
     return diff
 
+
+
 class Recorder:
     """Allows for continuous writing to a video file"""
-    def __init__(self,file_name='',debug=False):
+    def __init__(self,file_name='',verbose=False):
         """Starts the recording process"""
-        if not file_name:
-            #use the current date and time as the file name
-            file_name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        
-        # use ffmpeg pipe in
-        
+        # generate a file name that looks like this: Wednesday 18 January 2023 HH;MM.mp4
+        file_name = file_name + datetime.datetime.now().strftime("%A %d %B %Y %H;%M") 
         self.path = config.get_recording_dir() / f"{file_name}.mp4"
         self.paused = False
         self.stop = threading.Event()
@@ -85,7 +83,7 @@ class Recorder:
         self.status_thread = threading.Thread(target=self.status_thread, name="Status Thread", daemon=True)
         self.status_thread.start()
         
-        self.debug = debug
+        self.debug = verbose
         w,h = config.THUMBNAIL_RES
         i = config.THUMBNAIL_REDUCTION
         self.bardcoder = Bardcoder()
@@ -108,16 +106,12 @@ class Recorder:
             if frameDiff(frame, last_frame) < CHANGE_THRESHOLD:
                 continue
            
-            i = self.bardcoder.process_frame(frame)
-            if i:
-                print(f"Barcode found: {i}")
+            self.bardcoder.process_frame(frame)
             
-        
             # Flush the frame to FFmpeg       
             self.process.stdin.write(frame.tobytes()) # write to pipe
             last_frame = frame
               
-            
         cam.stop()
         self.process.stdin.close()
         self.process.wait()
@@ -158,12 +152,9 @@ class Recorder:
               
     def end_recording(self):
         self.stop.set()
-        
-        self.bardcoder.render_webp_thumbnail("thumbnail.webp")
-        
-        
         self.status_thread.join()   
         self.record_thread.join()
+        self.bardcoder.render_webp_thumbnail("thumbnail.webp")
 
 
 # ==========INTERFACE==========
@@ -171,7 +162,7 @@ RECORDER:Recorder = None
 def start():
     global RECORDER
     if RECORDER is None: 
-        RECORDER = Recorder(debug=False)
+        RECORDER = Recorder(verbose=False)
     if RECORDER.paused:
         RECORDER.paused = False
     
@@ -188,6 +179,6 @@ def pause():
     RECORDER.paused = True
   
 if __name__	== "__main__":
-    RECORDER = Recorder("debug",debug=True)
+    RECORDER = Recorder("debug",verbose=True)
     input("Press enter to stop recording")
     RECORDER.end_recording()

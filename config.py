@@ -2,17 +2,10 @@ import os
 import yaml
 import pathlib
 
-
-def get_recording_dir():
-    user = os.path.expanduser("~")
-    folder = os.path.join(user, "Video's", "Recordings")
-    return folder
-
-
 # convert to pathlib
 def get_recording_dir():
     user = pathlib.Path.home()
-    folder = user / "Videos" / "Recordings"
+    folder = user / "Videos" / "Records"
     return folder
 
 
@@ -23,6 +16,7 @@ def get_desktop_resolution():
     user32.SetProcessDPIAware()
     screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
     return screensize
+
 
 
 # Load YAML config file

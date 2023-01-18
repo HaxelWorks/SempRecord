@@ -15,7 +15,6 @@ def index():
     return app.send_static_file("index.html")
 
 
-
 @app.route("/api/status")
 def status():
     return jsonify(recorder.RECORDER.get_status())
@@ -43,6 +42,5 @@ def pause():
 def resume():
     tray.start()
     return jsonify({"status": "resumed"})
-
 
 app.run()

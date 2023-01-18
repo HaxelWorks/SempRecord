@@ -1,8 +1,5 @@
 # USER SETTINGS
 
-RECORDING_DIRECTORY: C:\Users\axel1\Videos\Recordings
-
-
 USE_BLACKLIST: True
 BLACKLISTED_APPS:
   # - Google Chrome

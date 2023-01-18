@@ -1,3 +1,8 @@
+# USER SETTINGS
+
+RECORDING_DIRECTORY: C:\Users\axel1\Videos\Recordings
+
+
 USE_BLACKLIST: True
 BLACKLISTED_APPS:
   # - Google Chrome
@@ -11,3 +16,8 @@ AUTOSTART_APPS:
   - Visual Studio Code
   - Github Desktop
   - Autodesk Inventor Professional 2023
+
+# ADVANCED SETTINGS
+INPUT_FPS: 15
+OUTPUT_FPS: 60
+THUMBNAIL_REDUCTION: 4 # eg 2560x1440 -> 640x360

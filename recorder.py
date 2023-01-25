@@ -50,11 +50,16 @@ class Recorder:
     def __init__(self,tag='',verbose=False):
         """Starts the recording process"""
         self.debug = verbose
-        
+        self.window_title = ''
+        self.nframes = 0
         # generate a file name that looks like this: Wednesday 18 January 2023 HH;MM.mp4 
         self.file_name = datetime.datetime.now().strftime("%A %d %B %Y %H;%M")
         if tag: self.file_name = f"{tag} - {self.file_name}"
         
+        # create a metadata file we can append to with simple frame:window_title pairs
+        self.metadata_file = config.get_recording_dir() / ".metadata" / f"{self.file_name}.tsv"
+        self.metadata_file.touch()
+        self.metadata_file = open(self.metadata_file,'a')
         self.thumbnail_generator = ThumbnailProcessor(self.file_name)
         
         self.path = config.get_recording_dir() / f"{self.file_name}.mp4"
@@ -88,7 +93,7 @@ class Recorder:
         )
         # launch threads
         self.record_thread = threading.Thread(target=self.recording_thread, name="Recording Thread", daemon=True)
-        self.status_thread = threading.Thread(target=self.status_thread, name="Status Thread", daemon=True)
+        self.status_thread = threading.Thread(target=self._status_thread, name="Status Thread", daemon=True)
         self.record_thread.start()
         self.status_thread.start()
         
@@ -105,6 +110,11 @@ class Recorder:
                 continue
             
             window_title = getForegroundWindowTitle()
+            if window_title != self.window_title:
+                self.window_title = window_title
+                self.metadata_file.write(f"{self.nframes}\t{window_title}\n")
+            
+            
             if isBlacklisted(window_title):
                 continue
             if frameDiff(frame, last_frame) < CHANGE_THRESHOLD:
@@ -115,12 +125,12 @@ class Recorder:
             # Flush the frame to FFmpeg       
             self.ffprocess.stdin.write(frame.tobytes()) # write to pipe
             last_frame = frame
-              
+            self.nframes +=1  
         cam.stop()
         self.ffprocess.stdin.close()
         self.ffprocess.wait()
          
-    def status_thread(self):
+    def _status_thread(self):
         self.status = ""
         buffer = b""
         while not self.stop.is_set():
@@ -155,19 +165,20 @@ class Recorder:
               
     def end_recording(self):
         self.stop.set()
-        self.status_thread.join()   
-        self.record_thread.join()
+        self.metadata_file.close()
         self.thumbnail_generator.render_webp_thumbnail()
-
+        
 
 # ==========INTERFACE==========
 RECORDER:Recorder = None
 def start():
     global RECORDER
     if RECORDER is None: 
-        RECORDER = Recorder(verbose=True)
+        RECORDER = Recorder(verbose=False)
+        print("Started recording")
     if RECORDER.paused:
         RECORDER.paused = False
+        print("Resumed recording")
     
 def stop():
     global RECORDER
@@ -175,11 +186,13 @@ def stop():
         return
     RECORDER.end_recording()
     RECORDER = None
+    print("Stopped recording")
 def pause():
     global RECORDER
     if RECORDER is None:
         return
     RECORDER.paused = True
+    print("Paused recording")
   
 if __name__	== "__main__":
     RECORDER = Recorder("debug",verbose=True)

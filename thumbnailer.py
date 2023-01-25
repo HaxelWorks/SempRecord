@@ -5,7 +5,7 @@ import config
 import qoi
 
 from queue import Queue
-from threading import Thread, Event
+from threading import Thread
 
 
 class ThumbnailProcessor:
@@ -22,11 +22,17 @@ class ThumbnailProcessor:
             config.get_recording_dir() / ".thumbnails" / f"{file_name}.webp"
         )
 
-        self.stop = Event()
-        self.writer_thread = Thread(
-            target=self.writer, name="Thumbnail Writer Thread", daemon=True
-        )
+        
+        self.writer_thread = Thread(target=self.writer, name="QOI encoder")
         self.writer_thread.start()
+
+    def keep_or_discard(self):
+        """returns a generator that yields True or False, True if the frame should be kept, False if it should be discarded"""
+        while True:
+            for i in range(config.OUTPUT_FPS):
+                yield True
+            for i in range(self.frames_to_skip):
+                yield False
 
     def save_frame(self, frame: np.ndarray) -> int:
         """Save a frame to the qoi cache."""
@@ -39,21 +45,18 @@ class ThumbnailProcessor:
         self.saved_frames += 1
 
     def writer(self):
-        """Retrieve frames from the queue and save them to the qoi cache, discarding specified number of frames."""
-        while not self.stop.is_set():
-            # Record 1 second of frames
-            for i in range(config.OUTPUT_FPS):
-                frame = self.queue.get()
-                frame = self.save_frame(frame)
-            # Discard the next n seconds of frames
-            for i in range(self.frames_to_skip):
-                self.queue.get()  # discard frames
-            self.fragments += 1
+        """Becomes a thread that listens to the queue and saves the frames to the qoi cache"""
+        kod = self.keep_or_discard()
+        while (frame := self.queue.get()) is not None:
+            if next(kod):
+                self.save_frame(frame)
 
     def render_webp_thumbnail(self):
         """Save the qoi sequence as a webp animation."""
-        self.stop.set()
-
+        #wait fort the queue to be empty
+        self.queue.put(None)  # send a stop signal to the writer thread
+        self.writer_thread.join()  # wait for the writer thread to stop
+        
         # convert the fragments to webp (use direct file writing)
         process = (
             ffmpeg.input(

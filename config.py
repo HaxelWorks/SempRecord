@@ -5,7 +5,7 @@ import pathlib
 # convert to pathlib
 def get_recording_dir():
     user = pathlib.Path.home()
-    folder = user / "Videos" / "Records"
+    folder = user / "Videos" / "Recordings"
     return folder
 
 
@@ -32,6 +32,7 @@ AUTOSTART_APPS: list[str]
 INPUT_FPS: int
 OUTPUT_FPS: int
 THUMBNAIL_REDUCTION: int
+THUMBNAIL_INTERVAL: int
 
 
 # GENERATED CONSTANTS

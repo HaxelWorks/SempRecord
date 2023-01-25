@@ -13,8 +13,11 @@ AUTOSTART_APPS:
   - Visual Studio Code
   - Github Desktop
   - Autodesk Inventor Professional 2023
+  - Blender
+  - Ultimaker Cura 5.2.1
 
 # ADVANCED SETTINGS
 INPUT_FPS: 15
 OUTPUT_FPS: 60
-THUMBNAIL_REDUCTION: 4 # eg 2560x1440 -> 640x360
+THUMBNAIL_REDUCTION: 4 # reduces thumbnail size 2560x1440 -> 640x360
+THUMBNAIL_INTERVAL: 15 # Every n seconds, record a second of thumbnail

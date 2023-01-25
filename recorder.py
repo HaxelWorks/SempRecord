@@ -14,11 +14,11 @@ import numpy as np
 import datetime
 
 import config
-from video_barcode import Bardcoder
+from thumbnailer import ThumbnailProcessor
  
 CODEC = "libx264" 
 CODEC = "h264_nvenc"
-CHANGE_THRESHOLD = 3000  #sub-pixels
+CHANGE_THRESHOLD = 4000  #sub-pixels
 
 # Helper functions
 def isBlacklisted(app_name: str) -> bool:
@@ -47,15 +47,23 @@ def frameDiff(frame1, frame2):
 
 class Recorder:
     """Allows for continuous writing to a video file"""
-    def __init__(self,file_name='',verbose=False):
+    def __init__(self,tag='',verbose=False):
         """Starts the recording process"""
-        # generate a file name that looks like this: Wednesday 18 January 2023 HH;MM.mp4
-        file_name = file_name + datetime.datetime.now().strftime("%A %d %B %Y %H;%M") 
-        self.path = config.get_recording_dir() / f"{file_name}.mp4"
+        self.debug = verbose
+        
+        # generate a file name that looks like this: Wednesday 18 January 2023 HH;MM.mp4 
+        self.file_name = datetime.datetime.now().strftime("%A %d %B %Y %H;%M")
+        if tag: self.file_name = f"{tag} - {self.file_name}"
+        
+        self.thumbnail_generator = ThumbnailProcessor(self.file_name)
+        
+        self.path = config.get_recording_dir() / f"{self.file_name}.mp4"
         self.paused = False
         self.stop = threading.Event()
+        
+        # start ffmpeg
         w,h = config.DISPLAY_RES
-        self.process = (
+        self.ffprocess = (
             ffmpeg.input(
                 "pipe:",
                 format="rawvideo",
@@ -66,10 +74,10 @@ class Recorder:
                 str(self.path),
                 r=config.OUTPUT_FPS,
                 vcodec=CODEC,
-                bitrate="2000k",
-                minrate="400k",
+                bitrate="1500k",
+                minrate="500k",
                 maxrate="3000k",
-                bufsize="4m",
+                bufsize="1500k",
                 preset="slow",
                 temporal_aq=1,
                 pix_fmt="yuv420p",
@@ -78,17 +86,13 @@ class Recorder:
             .overwrite_output()
             .run_async(pipe_stdin=True,pipe_stderr=True)
         )
+        # launch threads
         self.record_thread = threading.Thread(target=self.recording_thread, name="Recording Thread", daemon=True)
-        self.record_thread.start()
         self.status_thread = threading.Thread(target=self.status_thread, name="Status Thread", daemon=True)
+        self.record_thread.start()
         self.status_thread.start()
         
-        self.debug = verbose
-        w,h = config.THUMBNAIL_RES
-        i = config.THUMBNAIL_REDUCTION
-        self.bardcoder = Bardcoder()
 
-       
     def recording_thread(self):
         cam = dxcam.create()
         cam.start(target_fps=config.INPUT_FPS)
@@ -105,27 +109,26 @@ class Recorder:
                 continue
             if frameDiff(frame, last_frame) < CHANGE_THRESHOLD:
                 continue
-           
-            self.bardcoder.process_frame(frame)
+            # add the frame to the thumbnail generator
+            self.thumbnail_generator.queue.put(frame)
             
             # Flush the frame to FFmpeg       
-            self.process.stdin.write(frame.tobytes()) # write to pipe
+            self.ffprocess.stdin.write(frame.tobytes()) # write to pipe
             last_frame = frame
               
         cam.stop()
-        self.process.stdin.close()
-        self.process.wait()
+        self.ffprocess.stdin.close()
+        self.ffprocess.wait()
          
-
     def status_thread(self):
         self.status = ""
         buffer = b""
         while not self.stop.is_set():
             # we'd like to use readline but using \r as the delimiter
-            new_stat = self.process.stderr.read1()
+            new_stat = self.ffprocess.stderr.read1()
             # split the status into lines
             new_stat = new_stat.split(b"\r")
-            buffer+= new_stat[0]
+            buffer += new_stat[0]
             if len(new_stat) > 1:
                 # if there is more than one line, the last line is the current status
                 self.status = buffer.decode("utf-8").strip()
@@ -154,7 +157,7 @@ class Recorder:
         self.stop.set()
         self.status_thread.join()   
         self.record_thread.join()
-        self.bardcoder.render_webp_thumbnail("thumbnail.webp")
+        self.thumbnail_generator.render_webp_thumbnail()
 
 
 # ==========INTERFACE==========
@@ -162,7 +165,7 @@ RECORDER:Recorder = None
 def start():
     global RECORDER
     if RECORDER is None: 
-        RECORDER = Recorder(verbose=False)
+        RECORDER = Recorder(verbose=True)
     if RECORDER.paused:
         RECORDER.paused = False
     

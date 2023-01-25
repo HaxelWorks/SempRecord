@@ -55,7 +55,7 @@ def generate_menu(recording=False, paused=False):
 
 MENU = generate_menu()
 
-# In order for the icon to be displayed, you must provide an icon
+
 TRAY = pystray.Icon(
     icon=ICONS.inactive, menu=MENU, title="SempRecord", name="SempRecord"
 )

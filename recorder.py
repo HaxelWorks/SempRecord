@@ -35,7 +35,12 @@ def getForegroundWindowTitle() -> Optional[str]:
     length = windll.user32.GetWindowTextLengthW(hWnd)
     buf = create_unicode_buffer(length + 1)
     windll.user32.GetWindowTextW(hWnd, buf, length + 1)
-    return buf.value if buf.value else None
+    if buf.value:
+        # strip the string of any non-ascii characters
+        text = buf.value.encode("ascii", "ignore").decode()
+        return text
+    else:
+        return None
 
 def frameDiff(frame1, frame2):
     diff = frame1 != frame2

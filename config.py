@@ -8,6 +8,15 @@ def get_recording_dir():
     folder = user / "Videos" / "Recordings"
     return folder
 
+# make sure the following folders exist
+# .cache - saves thumbnails frames as qoi files
+# .metadata - saves changes in window focus as a tsv files
+# .thumbnails - saves thumbnails as webp animations
+recdir = get_recording_dir()
+recdir.mkdir(exist_ok=True)
+(recdir / ".cache").mkdir(exist_ok=True)
+(recdir / ".metadata").mkdir(exist_ok=True)
+(recdir / ".thumbnails").mkdir(exist_ok=True)
 
 def get_desktop_resolution():
     from ctypes import windll
@@ -16,8 +25,6 @@ def get_desktop_resolution():
     user32.SetProcessDPIAware()
     screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
     return screensize
-
-
 
 # Load YAML config file
 yaml_config: dict = yaml.safe_load(open("config.yaml"))

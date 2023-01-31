@@ -1,6 +1,7 @@
 import os
 import yaml
 import pathlib
+from ctypes import windll
 
 # convert to pathlib
 def get_recording_dir():
@@ -19,8 +20,6 @@ recdir.mkdir(exist_ok=True)
 (recdir / ".thumbnails").mkdir(exist_ok=True)
 
 def get_desktop_resolution():
-    from ctypes import windll
-
     user32 = windll.user32
     user32.SetProcessDPIAware()
     screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)

@@ -1,15 +1,17 @@
 # flask api example
 from flask import Flask, jsonify, request
 from flask_restful import Resource, Api
+import config
 import tray
 import recorder
-
+import csv
 INDEX_PATH = r"frontend\public"
+
 # this path contains index.html and all the other frontend files
 app = Flask(__name__)
 api = Api(app)
 
-#serve index.html at the root
+# serve index.html at the root
 @app.route("/")
 def index():
     return app.send_static_file("index.html")
@@ -17,7 +19,10 @@ def index():
 
 @app.route("/api/status")
 def status():
-    return jsonify(recorder.RECORDER.get_status())
+    if recorder.RECORDER is None:
+        return jsonify({"status": "stopped"})
+    else:
+        return jsonify(recorder.RECORDER.get_status())
 
 
 @app.route("/api/controls/start", methods=["POST"])
@@ -38,9 +43,39 @@ def pause():
     return jsonify({"status": "paused"})
 
 
-@app.route("/api/controls/resume", methods=["POST"])
-def resume():
-    tray.start()
-    return jsonify({"status": "resumed"})
+@app.route("/api/media/thumbnails")
+def request_thumbnails():
+    """get the list of thumbnails"""    
+    # read the thumbnails from the directory
+    path = config.get_recording_dir() / ".thumbnails"
+    thumbnails = [str(p) for p in path.iterdir()]
+    return jsonify(thumbnails)
+
+# TODO settings route
+#TODO delete recordings route
+
+# TODO recordings route
+@app.route("/api/recordings")
+def request_recordings():
+    """get the list of recordings"""
+    recdir = config.get_recording_dir()
+    # read the recordings from the directory
+    recordings = [str(p) for p in recdir.iterdir()]
+    
+    for record in recordings:
+        # get the metadata tsv file for each recording
+        #remove the .mp4 from the record
+        record = record.replace(".mp4", "")
+        metadata_path = recdir / ".metadata" / f"{record}.tsv"
+        
+        # read the metadata file
+        with open(metadata_path, "r") as f:
+            reader = csv.reader(f, delimiter="\t")
+            metadata = [row for row in reader]
+        # add the metadata to the recording
+        recording["metadata"] = metadata
+        
+
+
 
 app.run()

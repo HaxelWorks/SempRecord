@@ -1,6 +1,8 @@
 /test.mp4
-/Untitled-1.py
 /__pycache__
 .DS_store
 .mp4
 .webp
+experiments/
+frontend/public/build/
+static/

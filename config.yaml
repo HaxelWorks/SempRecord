@@ -2,7 +2,7 @@
 
 USE_BLACKLIST: True
 BLACKLISTED_APPS:
-  # - Google Chrome
+  - Google Chrome
   - WhatsApp
   - Messenger
   - Discord
@@ -14,7 +14,7 @@ AUTOSTART_APPS:
   - Github Desktop
   - Autodesk Inventor Professional 2023
   - Blender
-  - Ultimaker Cura 5.2.1
+  - Ultimaker Cura 
 
 # ADVANCED SETTINGS
 INPUT_FPS: 15

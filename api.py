@@ -8,13 +8,18 @@ import csv
 INDEX_PATH = r"frontend\public"
 
 # this path contains index.html and all the other frontend files
-app = Flask(__name__)
+app = Flask(__name__, static_folder = INDEX_PATH)
 api = Api(app)
 
 # serve index.html at the root
 @app.route("/")
 def index():
     return app.send_static_file("index.html")
+
+#serve build files too
+@app.route("/<path:path>")
+def static_proxy(path):
+    return app.send_static_file(path)
 
 
 @app.route("/api/status")

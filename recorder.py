@@ -15,6 +15,7 @@ import datetime
 
 import config
 from thumbnailer import ThumbnailProcessor
+from tray import TRAY
  
 CODEC = "libx264" 
 CODEC = "h264_nvenc"

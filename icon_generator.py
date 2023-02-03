@@ -10,7 +10,7 @@ BLUE = (0, 0, 255, 255)
 GRAY = (64, 64, 64, 255)
 
 def icoratio(size: int):
-    sizes = [285, 247, 206, 56]
+    sizes = [285, 240, 206, 56]
     ratio = 256 / size
     factor = 256 / 285
     sizes = [int((size/ratio) * factor) for size in sizes]

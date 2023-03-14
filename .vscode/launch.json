@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
 
         {
             "name": "Current File",
@@ -21,13 +22,6 @@
             "console": "integratedTerminal",
             "justMyCode": true
         },
-        {
-            "name": "Main",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/experiments/profile.py",
-            "console": "integratedTerminal",
-            "justMyCode": true
-        }
+
     ]
 }

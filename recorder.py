@@ -19,8 +19,8 @@ from tray import TRAY
  
 CODEC = "libx264" 
 CODEC = "h264_nvenc"
-CHANGE_THRESHOLD = 4000  #sub-pixels
-
+CHANGE_THRESHOLD = 5000  #sub-pixels
+FFPATH = r"ffmpeg-master-latest-win64-gpl-shared\bin\ffmpeg.exe"
 # Helper functions
 def isBlacklisted(app_name: str) -> bool:
     """Returns True if the app is blacklisted or no focus is on an app."""	
@@ -74,7 +74,7 @@ class Recorder:
         
         # start ffmpeg
         w,h = config.DISPLAY_RES
-        self.ffprocess = (
+        self.ffprocess =(
             ffmpeg.input(
                 "pipe:",
                 format="rawvideo",
@@ -85,18 +85,21 @@ class Recorder:
                 str(self.path),
                 r=config.OUTPUT_FPS,
                 vcodec=CODEC,
-                bitrate="1500k",
+                bitrate="1000k",
                 minrate="500k",
-                maxrate="3000k",
-                bufsize="1500k",
+                maxrate="2000k",
+                bufsize="1000k",
                 preset="slow",
                 temporal_aq=1,
                 pix_fmt="yuv420p",
                 movflags="faststart",  
             )
             .overwrite_output()
-            .run_async(pipe_stdin=True,pipe_stderr=True)
+            .run_async(pipe_stdin=True,pipe_stderr=True,cmd=FFPATH)
         )
+        
+        
+        
         # launch threads
         self.record_thread = threading.Thread(target=self.recording_thread, name="Recording Thread", daemon=True)
         self.status_thread = threading.Thread(target=self._status_thread, name="Status Thread", daemon=True)

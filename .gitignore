@@ -7,3 +7,6 @@ experiments/
 frontend/public/build/
 static/
 ffmpeg-master-latest-win64-gpl*
+dist/
+build/
+frontend/public/build/

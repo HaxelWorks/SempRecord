@@ -13,20 +13,20 @@ import ffmpeg
 import numpy as np
 import datetime
 
-import config
+import settings
 from thumbnailer import ThumbnailProcessor
 from tray import TRAY
  
 CODEC = "libx264" 
 CODEC = "h264_nvenc"
 CHANGE_THRESHOLD = 5000  #sub-pixels
-FFPATH = r"ffmpeg-master-latest-win64-gpl-shared\bin\ffmpeg.exe"
+FFPATH = r".\ffmpeg.exe"
 # Helper functions
 def isBlacklisted(app_name: str) -> bool:
     """Returns True if the app is blacklisted or no focus is on an app."""	
     if not app_name:
         return True
-    for excl in config.BLACKLISTED_APPS:
+    for excl in settings.BLACKLISTED_APPS:
         if app_name.endswith(excl):
             return True
     return False 
@@ -63,17 +63,17 @@ class Recorder:
         if tag: self.file_name = f"{tag} - {self.file_name}"
         
         # create a metadata file we can append to with simple frame:window_title pairs
-        self.metadata_file = config.get_recording_dir() / ".metadata" / f"{self.file_name}.tsv"
+        self.metadata_file = settings.RECORDING_DIR / ".metadata" / f"{self.file_name}.tsv"
         self.metadata_file.touch()
         self.metadata_file = open(self.metadata_file,'a')
         self.thumbnail_generator = ThumbnailProcessor(self.file_name)
         
-        self.path = config.get_recording_dir() / f"{self.file_name}.mp4"
+        self.path = settings.RECORDING_DIR / f"{self.file_name}.mp4"
         self.paused = False
         self.stop = threading.Event()
         
         # start ffmpeg
-        w,h = config.DISPLAY_RES
+        w,h = settings.DISPLAY_RES
         self.ffprocess =(
             ffmpeg.input(
                 "pipe:",
@@ -83,7 +83,7 @@ class Recorder:
             )
             .output(
                 str(self.path),
-                r=config.OUTPUT_FPS,
+                r=settings.OUTPUT_FPS,
                 vcodec=CODEC,
                 bitrate="1000k",
                 minrate="500k",
@@ -95,7 +95,7 @@ class Recorder:
                 movflags="faststart",  
             )
             .overwrite_output()
-            .run_async(pipe_stdin=True,pipe_stderr=True,cmd=FFPATH)
+            .run_async(pipe_stdin=True,pipe_stderr=True)
         )
         
         
@@ -109,7 +109,7 @@ class Recorder:
 
     def recording_thread(self):
         cam = dxcam.create()
-        cam.start(target_fps=config.INPUT_FPS)
+        cam.start(target_fps=settings.INPUT_FPS)
         last_frame = cam.get_latest_frame()
         
         while not self.stop.is_set():

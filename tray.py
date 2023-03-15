@@ -27,6 +27,12 @@ def pause():
     TRAY.icon = ICONS.paused
     TRAY.menu = generate_menu(recording=True, paused=True)
 
+def exit_program():
+    stop()
+    TRAY.stop()
+    # exit the program
+    os._exit(0)
+    
 
 def open_folder():
     os.startfile("C:\\Users\\Axel1\\Desktop\\SempRecord")  # TODO: make this dynamic
@@ -45,11 +51,13 @@ def generate_menu(recording=False, paused=False):
             pystray.MenuItem("Start", start, enabled=not recording),
             pystray.MenuItem("Pause", pause, enabled=recording),
             pystray.MenuItem("Stop", stop, enabled=recording),
+            
         ]
         items.extend(controls)
 
     items.append(pystray.MenuItem("Open Folder", open_folder))
     items.append(pystray.MenuItem("Open Interface", open_browser))
+    items.append(pystray.MenuItem("Exit", exit_program))
 
     return pystray.Menu(*items)
 

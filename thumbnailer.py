@@ -1,7 +1,7 @@
 import PIL
 import numpy as np
 import ffmpeg
-import config
+import settings
 import qoi
 
 from queue import Queue
@@ -11,15 +11,15 @@ from threading import Thread
 class ThumbnailProcessor:
     def __init__(self, file_name: str):
         """Create a thumbnail for the given file name."""
-        self.frames_to_skip = config.INPUT_FPS * config.THUMBNAIL_INTERVAL
-        self.width, self.height = config.THUMBNAIL_RES
+        self.frames_to_skip = settings.INPUT_FPS * settings.THUMBNAIL_INTERVAL
+        self.width, self.height = settings.THUMBNAIL_RES
 
         self.saved_frames = 0
         self.fragments = 0
         self.queue = Queue()
-        self.qoi_cache_path = config.get_recording_dir() / ".cache"
+        self.qoi_cache_path = settings.RECORDING_DIR / ".cache"
         self.thumb_path = (
-            config.get_recording_dir() / ".thumbnails" / f"{file_name}.webp"
+            settings.RECORDING_DIR / ".thumbnails" / f"{file_name}.webp"
         )
 
         
@@ -29,7 +29,7 @@ class ThumbnailProcessor:
     def keep_or_discard(self):
         """returns a generator that yields True or False, True if the frame should be kept, False if it should be discarded"""
         while True:
-            for i in range(config.OUTPUT_FPS):
+            for i in range(settings.OUTPUT_FPS):
                 yield True
             for i in range(self.frames_to_skip):
                 yield False
@@ -69,7 +69,7 @@ class ThumbnailProcessor:
                 str(self.thumb_path),
                 pix_fmt="yuv420p",
                 vcodec="libwebp",
-                r=config.OUTPUT_FPS,
+                r=settings.OUTPUT_FPS,
                 preset="text",
                 compression_level=6,
                 loop=0,

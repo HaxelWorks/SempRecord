@@ -1,7 +1,7 @@
 # flask api example
 from flask import Flask, jsonify, request
 from flask_restful import Resource, Api
-import config
+import settings
 import tray
 import recorder
 import csv
@@ -52,7 +52,7 @@ def pause():
 def request_thumbnails():
     """get the list of thumbnails"""    
     # read the thumbnails from the directory
-    path = config.get_recording_dir() / ".thumbnails"
+    path = settings.get_recording_dir() / ".thumbnails"
     thumbnails = [str(p) for p in path.iterdir()]
     return jsonify(thumbnails)
 
@@ -63,7 +63,7 @@ def request_thumbnails():
 @app.route("/api/recordings")
 def request_recordings():
     """get the list of recordings"""
-    recdir = config.get_recording_dir()
+    recdir = settings.get_recording_dir()
     # read the recordings from the directory
     recordings = [str(p) for p in recdir.iterdir()]
     

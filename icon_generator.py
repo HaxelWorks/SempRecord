@@ -41,10 +41,6 @@ def tray_icon_generator(size:int, color:tuple):
     image = image.resize((size//UPSAMPLE, size//UPSAMPLE), resample=Image.LANCZOS)
     return image
     
-    
-
-    
-    
 
 class ICONS:
     active = tray_icon_generator(SIZE, RED)

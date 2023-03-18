@@ -1,3 +1,4 @@
+import sys
 import os
 import threading
 from collections import Counter
@@ -16,9 +17,28 @@ import datetime
 import settings
 from thumbnailer import ThumbnailProcessor
 from tray import TRAY
- 
-CODEC = "libx264" 
-CODEC = "h264_nvenc"
+import subprocess
+import pynvml
+
+
+def nvenc_available() -> bool:
+    try:
+        pynvml.nvmlInit()
+        deviceCount = pynvml.nvmlDeviceGetCount()
+        for i in range(deviceCount):
+            handle = pynvml.nvmlDeviceGetHandleByIndex(i)
+            enc_cap = pynvml.nvmlDeviceGetEncoderCapacity(handle, pynvml.NVML_ENCODER_QUERY_H264)
+            if enc_cap > 0:
+                return True
+        return False
+    except Exception as e:
+        print("Error: {}".format(e))
+        return False
+    finally:
+        pynvml.nvmlShutdown()
+
+
+CODEC = "h264_nvenc" if nvenc_available() else "libx264"
 CHANGE_THRESHOLD = 5000  #sub-pixels
 FFPATH = r".\ffmpeg.exe"
 # Helper functions
@@ -48,9 +68,6 @@ def frameDiff(frame1, frame2):
     # summ the whole frame into one value
     diff = diff.sum()
     return diff
-
-
-
 class Recorder:
     """Allows for continuous writing to a video file"""
     def __init__(self,tag='',verbose=False):
@@ -74,28 +91,28 @@ class Recorder:
         
         # start ffmpeg
         w,h = settings.DISPLAY_RES
-        self.ffprocess =(
-            ffmpeg.input(
-                "pipe:",
-                format="rawvideo",
-                pix_fmt="rgb24",
-                s=f"{w}x{h}",
-            )
-            .output(
-                str(self.path),
-                r=settings.OUTPUT_FPS,
-                vcodec=CODEC,
-                bitrate="1000k",
-                minrate="500k",
-                maxrate="2000k",
-                bufsize="1000k",
-                preset="slow",
-                temporal_aq=1,
-                pix_fmt="yuv420p",
-                movflags="faststart",  
-            )
-            .overwrite_output()
-            .run_async(pipe_stdin=True,pipe_stderr=True)
+        cmd = [
+            'ffmpeg', '-y',
+            '-f', 'rawvideo',
+            '-pix_fmt', 'rgb24',
+            '-s', f'{w}x{h}',
+            '-r', str(settings.OUTPUT_FPS),
+            '-i', '-',
+            '-vcodec', CODEC,
+            '-b:v', '1500k',
+            '-minrate', '1000k',
+            '-maxrate', '2000k',
+            '-bufsize', '1000k',
+            '-preset', 'slow',
+            '-tune', 'film',
+            '-temporal-aq', '1',
+            '-pix_fmt', 'yuv420p',
+            '-movflags', 'faststart',
+            str(self.path),
+        ]
+        self.ffprocess = subprocess.Popen(
+        cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
+        creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0,
         )
         
         
@@ -177,7 +194,6 @@ class Recorder:
         self.metadata_file.close()
         self.thumbnail_generator.render_webp_thumbnail()
         
-
 # ==========INTERFACE==========
 RECORDER:Recorder = None
 def start():

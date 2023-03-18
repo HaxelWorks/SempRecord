@@ -5,6 +5,12 @@ import settings
 import tray
 import recorder
 import csv
+
+import logging
+from logging.handlers import RotatingFileHandler
+
+
+
 INDEX_PATH = r"frontend\public"
 
 # this path contains index.html and all the other frontend files

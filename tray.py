@@ -4,7 +4,7 @@ import recorder
 from icon_generator import ICONS
 from threading import Thread
 from time import sleep
-
+import settings
 # Create a menu with a Start/Stop and pause option
 # as well as the option to open a specific folder in the file explorer
 # and one that opens the management page in the browser
@@ -35,7 +35,7 @@ def exit_program():
     
 
 def open_folder():
-    os.startfile("C:\\Users\\Axel1\\Desktop\\SempRecord")  # TODO: make this dynamic
+    os.startfile(str(settings.RECORDING_DIR))
 
 
 def open_browser():

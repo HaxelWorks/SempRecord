@@ -1,30 +1,49 @@
+import sys
 import os
+from random import randint
 import yaml
 import pathlib
 from ctypes import windll
 import appdirs
 import shutil
+import win32api
+import win32con
 from typing import List
 
-DEFAULT_SETTINGS_FILE = "default_settings.yaml"
+# check if _MEIPASS exists, if so we are running this in a pyinstaller's onefile mode
+if hasattr(sys, '_MEIPASS'):
+    meipass_root = pathlib.Path(sys._MEIPASS)
+    DEFAULT_SETTINGS_FILE = meipass_root / "default_settings.yaml"
+else:
+    DEFAULT_SETTINGS_FILE = "default_settings.yaml"
+    
 THUMBNAIL_REDUCTION = 4
 RECORDING_DIR = ''
-data_dir = appdirs.site_data_dir("SempRecord", appauthor="HaxelWorks")
+data_dir = appdirs.site_data_dir("SempRecord", appauthor="HaxelWerks")
+data_dir = pathlib.Path(data_dir)
 os.makedirs(data_dir, exist_ok=True) # Make sure the data directory exists
-settings_path = os.path.join(data_dir, "settings.yaml")
+SETTINGS_PATH = data_dir / "settings.yaml"
 
-if not os.path.isfile(settings_path):
+# msg = os.listdir()
+# raise Exception(msg)
+
+if not os.path.isfile(SETTINGS_PATH):
    # If the settings file doesn't exist,
    # copy the default settings file to the data_dir and renamed as settings.yaml
    with open(DEFAULT_SETTINGS_FILE) as d:
-    shutil.copyfile(DEFAULT_SETTINGS_FILE, settings_path)
+    shutil.copyfile(DEFAULT_SETTINGS_FILE, SETTINGS_PATH)
  
 
 # Load YAML config file
-with open(settings_path) as f:
+with open(SETTINGS_PATH) as f:
     _settings: dict = yaml.safe_load(f.read())
     # expose all config values as global variables
     globals().update(_settings)
+
+RECORDING_DIR = pathlib.Path(os.path.expanduser('~')) / "Videos" / "Records"
+# create the recording directory if it doesn't exists
+RECORDING_DIR.mkdir(exist_ok=True)
+
 
 # CONFIG TYPES
 TYPES = [
@@ -43,7 +62,7 @@ USER_VARS = [key for key, _ in TYPES]
 def save_settings():
     """Save current settings to settings.yaml"""
     _settings = {k: globals()[k] for k in USER_VARS}
-    with open(settings_path, 'w') as f:
+    with open(SETTINGS_PATH, 'w') as f:
         f.write(yaml.safe_dump(_settings))
 
 
@@ -57,6 +76,11 @@ RECORDING_DIR.mkdir(exist_ok=True)
 (RECORDING_DIR / ".metadata").mkdir(exist_ok=True)
 (RECORDING_DIR / ".thumbnails").mkdir(exist_ok=True)
 
+
+# Set the folders starting with . to hidden
+for f in RECORDING_DIR.iterdir():
+    if f.name.startswith("."):
+        win32api.SetFileAttributes(str(f), win32con.FILE_ATTRIBUTE_HIDDEN)
 
 # GENERATED CONSTANTS
 def get_desktop_resolution():

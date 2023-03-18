@@ -3,14 +3,14 @@ from PIL import Image, ImageDraw
 SIZE = 32
 UPSAMPLE = 4
 TRANSP = (0, 0, 0, 0)
-RED = (245, 3, 1, 255)
+RED = (234, 10, 3, 255)
 YELLOW = (255, 255, 0, 255)
 GREEN = (0, 255, 0, 255)
 BLUE = (0, 0, 255, 255)
-GRAY = (64, 64, 64, 255)
+GRAY = (52, 52, 52, 255)
 
 def icoratio(size: int):
-    sizes = [285, 240, 206, 56]
+    sizes = [285, 240, 200, 64]
     ratio = 256 / size
     factor = 256 / 285
     sizes = [int((size/ratio) * factor) for size in sizes]

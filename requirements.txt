@@ -11,3 +11,4 @@ appdirs
 ffmpeg-python
 flask_restful
 pynvml
+winshell

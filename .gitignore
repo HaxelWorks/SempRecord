@@ -12,3 +12,4 @@ build/
 frontend/public/build/
 
 ffmpeg.exe
+main.spec

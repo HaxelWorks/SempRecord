@@ -51,11 +51,13 @@ TYPES = [
     ('USE_BLACKLIST', bool),
     ('BLACKLISTED_APPS', List[str]),
     ('USE_AUTOSTART', bool),
+    ('USE_AUTOSTOP', bool),
     ('AUTOSTART_APPS', List[str]),
     ('INPUT_FPS', int),
     ('OUTPUT_FPS', int),
     ('THUMBNAIL_REDUCTION', int),
-    ('THUMBNAIL_INTERVAL', int)
+    ('THUMBNAIL_INTERVAL', int),
+    ('AUTOSTART_OVERRIDES_BLACKLIST', bool)
 ]
 USER_VARS = [key for key, _ in TYPES]
 

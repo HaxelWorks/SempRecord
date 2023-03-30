@@ -12,12 +12,15 @@ BLACKLISTED_APPS:
   
 
 USE_AUTOSTART: True
+USE_AUTOSTOP: True
 AUTOSTART_APPS:
   - Visual Studio Code
   - Github Desktop
   - Autodesk Inventor Professional 2023
   - Blender
   - Ultimaker Cura 
+
+AUTOSTART_OVERRIDES_BLACKLIST: True
 
 # ADVANCED SETTINGS
 INPUT_FPS: 15

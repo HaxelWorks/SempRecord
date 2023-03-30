@@ -1,73 +1,29 @@
-import sys
 import os
 import threading
 from collections import Counter
-from ctypes import create_unicode_buffer, windll
 from time import sleep
-from typing import Optional
 import pathlib
 from shutil import move
 import PIL
-
 import dxcam
 import ffmpeg
 import numpy as np
 import datetime
-
 import settings
 from thumbnailer import ThumbnailProcessor
-from tray import TRAY
 import subprocess
-import pynvml
-
-
-def nvenc_available() -> bool:
-    try:
-        pynvml.nvmlInit()
-        deviceCount = pynvml.nvmlDeviceGetCount()
-        for i in range(deviceCount):
-            handle = pynvml.nvmlDeviceGetHandleByIndex(i)
-            enc_cap = pynvml.nvmlDeviceGetEncoderCapacity(handle, pynvml.NVML_ENCODER_QUERY_H264)
-            if enc_cap > 0:
-                return True
-        return False
-    except Exception as e:
-        print("Error: {}".format(e))
-        return False
-    finally:
-        pynvml.nvmlShutdown()
-
+from util import nvenc_available, getForegroundWindowTitle, isTriggerlisted, isBlacklisted
 
 CODEC = "h264_nvenc" if nvenc_available() else "libx264"
-CHANGE_THRESHOLD = 5000  #sub-pixels
+CHANGE_THRESHOLD = 10_000  #sub-pixels
 FFPATH = r".\ffmpeg.exe"
-# Helper functions
-def isBlacklisted(app_name: str) -> bool:
-    """Returns True if the app is blacklisted or no focus is on an app."""	
-    if not app_name:
-        return True
-    for excl in settings.BLACKLISTED_APPS:
-        if app_name.endswith(excl):
-            return True
-    return False 
-
-def getForegroundWindowTitle() -> Optional[str]:
-    hWnd = windll.user32.GetForegroundWindow()
-    length = windll.user32.GetWindowTextLengthW(hWnd)
-    buf = create_unicode_buffer(length + 1)
-    windll.user32.GetWindowTextW(hWnd, buf, length + 1)
-    if buf.value:
-        # strip the string of any non-ascii characters
-        text = buf.value.encode("ascii", "ignore").decode()
-        return text
-    else:
-        return None
 
 def frameDiff(frame1, frame2):
     diff = frame1 != frame2
     # summ the whole frame into one value
     diff = diff.sum()
     return diff
+
 class Recorder:
     """Allows for continuous writing to a video file"""
     def __init__(self,tag='',verbose=False):
@@ -91,38 +47,36 @@ class Recorder:
         
         # start ffmpeg
         w,h = settings.DISPLAY_RES
-        cmd = [
-            'ffmpeg', '-y',
-            '-f', 'rawvideo',
-            '-pix_fmt', 'rgb24',
-            '-s', f'{w}x{h}',
-            '-r', str(settings.OUTPUT_FPS),
-            '-i', '-',
-            '-vcodec', CODEC,
-            '-b:v', '1500k',
-            '-minrate', '1000k',
-            '-maxrate', '2000k',
-            '-bufsize', '1000k',
-            '-preset', 'slow',
-            '-tune', 'film',
-            '-temporal-aq', '1',
-            '-pix_fmt', 'yuv420p',
-            '-movflags', 'faststart',
-            str(self.path),
-        ]
-        self.ffprocess = subprocess.Popen(
-        cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
-        creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0,
+        self.ffprocess =(
+            ffmpeg.input(
+                "pipe:",
+                format="rawvideo",
+                pix_fmt="rgb24",
+                s=f"{w}x{h}",
+            )
+            .output(
+                str(self.path),
+                r=settings.OUTPUT_FPS,
+                vcodec=CODEC,
+                bitrate="2000k",
+                minrate="750k",
+                maxrate="2500k",
+                bufsize="2000k",
+                preset="slow",
+                temporal_aq=1,
+                pix_fmt="yuv420p",
+                movflags="faststart",  
+            )
+            .overwrite_output()
+            .run_async(pipe_stdin=True,pipe_stderr=True)
         )
         
-        
-        
+    
         # launch threads
         self.record_thread = threading.Thread(target=self.recording_thread, name="Recording Thread", daemon=True)
         self.status_thread = threading.Thread(target=self._status_thread, name="Status Thread", daemon=True)
         self.record_thread.start()
         self.status_thread.start()
-        
 
     def recording_thread(self):
         cam = dxcam.create()
@@ -193,7 +147,7 @@ class Recorder:
         self.stop.set()
         self.metadata_file.close()
         self.thumbnail_generator.render_webp_thumbnail()
-        
+
 # ==========INTERFACE==========
 RECORDER:Recorder = None
 def start():

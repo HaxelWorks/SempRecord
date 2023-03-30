@@ -5,6 +5,7 @@ from icon_generator import ICONS
 from threading import Thread
 from time import sleep
 import settings
+import run_on_boot
 # Create a menu with a Start/Stop and pause option
 # as well as the option to open a specific folder in the file explorer
 # and one that opens the management page in the browser
@@ -58,6 +59,11 @@ def generate_menu(recording=False, paused=False):
     items.append(pystray.MenuItem("Open Folder", open_folder))
     items.append(pystray.MenuItem("Open Interface", open_browser))
     items.append(pystray.MenuItem("Exit", exit_program))
+    # add a menu entry that shows a radio button if the program is set to autostart or not
+    # when checked it should run run_on_boot.enable() and when unchecked it should run run_on_boot.disable()
+    # the menu entry should be called "Autostart"
+    
+    
 
     return pystray.Menu(*items)
 

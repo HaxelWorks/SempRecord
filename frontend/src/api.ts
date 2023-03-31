@@ -8,7 +8,7 @@ export interface Recording {
     thumbnail: string;
 }
 
-const API_URL = 'http://127.0.0.1:5000/api';
+const API_URL = 'http://localhost:5000/api';
 
 //get list of recordings
 export async function getRecordings(): Promise<Recording[]> {

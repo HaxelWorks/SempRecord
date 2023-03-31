@@ -46,7 +46,7 @@ def isTriggerlisted(app_name: str) -> bool:
     """Returns True if the app is blacklisted or no focus is on an app."""	
     if not app_name:
         return False
-    for incl in settings.USE_AUTOSTART:
+    for incl in settings.AUTOSTART_APPS:
         if app_name.endswith(incl):
             return True
     return False

@@ -26,7 +26,7 @@ def frameDiff(frame1, frame2):
 
 class Recorder:
     """Allows for continuous writing to a video file"""
-    def __init__(self,tag='',verbose=False):
+    def __init__(self,tag='',verbose=True):
         """Starts the recording process"""
         self.debug = verbose
         self.window_title = ''

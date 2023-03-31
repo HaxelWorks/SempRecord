@@ -11,7 +11,7 @@ def trigger_thread(interval=15):
     """Automatically starts and stops recording based on the foreground window title."""
     global RECORDER
     sleep(interval)
-    while settings.USE_AUTOTRIGGER:
+    while settings.USE_AUTOSTART:
         window_title = getForegroundWindowTitle()
         if isTriggerlisted(window_title) and RECORDER is None:
             tray.start()

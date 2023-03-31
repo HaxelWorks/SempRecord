@@ -1,5 +1,5 @@
 # USER SETTINGS
-RECORDING_DIR: r"C:\Users\axel1\Videos\Records"
+RECORDING_DIR: "" # Leave blank to use default directory
 USE_BLACKLIST: True
 BLACKLISTED_APPS:
   - Google Chrome

@@ -17,6 +17,15 @@ INDEX_PATH = r"frontend\public"
 app = Flask(__name__, static_folder = INDEX_PATH)
 api = Api(app)
 
+# allow Access-Control-Allow-Origin for all origins
+@app.after_request
+def after_request(response):
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+    response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
+    return response
+
+
 # serve index.html at the root
 @app.route("/")
 def index():

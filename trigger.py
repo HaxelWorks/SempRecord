@@ -13,7 +13,7 @@ def trigger_thread(interval=15):
     sleep(interval)
     while settings.USE_AUTOSTART:
         window_title = getForegroundWindowTitle()
-        if isTriggerlisted(window_title) and recorder.RECORDER is None:
+        if isTriggerlisted(window_title) and recorder.RECORDER is None and tray.trigger_state:
             tray.start()
         sleep(interval)
 # start the recording trigger thread

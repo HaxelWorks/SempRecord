@@ -1,17 +1,12 @@
 import os
 import threading
-from collections import Counter
 from time import sleep
-import pathlib
-from shutil import move
 import PIL
 import dxcam
 import ffmpeg
-import numpy as np
 import datetime
 import settings
 from thumbnailer import ThumbnailProcessor
-import subprocess
 from util import nvenc_available, getForegroundWindowTitle, isTriggerlisted, isBlacklisted
 
 CODEC = "h264_nvenc" if nvenc_available() else "libx264"

@@ -18,7 +18,7 @@ AUTOSTART_APPS:
   - Github Desktop
   - Autodesk Inventor Professional 2023
   - Blender
-  - Ultimaker Cura 
+  - Ultimaker Cura
 
 AUTOSTART_OVERRIDES_BLACKLIST: True
 

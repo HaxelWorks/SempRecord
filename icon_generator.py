@@ -1,3 +1,4 @@
+from tkinter import Y
 from PIL import Image, ImageDraw
 
 SIZE = 32
@@ -8,9 +9,10 @@ YELLOW = (255, 255, 0, 255)
 GREEN = (0, 255, 0, 255)
 BLUE = (0, 0, 255, 255)
 GRAY = (52, 52, 52, 255)
+ORANGE = (255, 165, 0, 255)
 
 def icoratio(size: int):
-    sizes = [285, 240, 200, 64]
+    sizes = [285, 235, 176, 73]
     ratio = 256 / size
     factor = 256 / 285
     sizes = [int((size/ratio) * factor) for size in sizes]
@@ -45,12 +47,16 @@ def tray_icon_generator(size:int, color:tuple):
 class ICONS:
     active = tray_icon_generator(SIZE, RED)
     paused = tray_icon_generator(SIZE, YELLOW)
-    standby = tray_icon_generator(SIZE, BLUE)
+    standby = tray_icon_generator(SIZE, ORANGE)
     inactive = tray_icon_generator(SIZE, GRAY)
+    rendering = tray_icon_generator(SIZE, BLUE)
     
 if __name__ == "__main__":
     # use pil to show the icons
-    ICONS.active.show()
-    ICONS.standby.show()
-    ICONS.paused.show()
-    ICONS.inactive.show()
+    # ICONS.standby.show()
+    # ICONS.paused.show()
+    # ICONS.inactive.show()
+    
+    ico = ICONS.active
+    # save the icon as icon.ico
+    

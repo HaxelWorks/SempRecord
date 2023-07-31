@@ -1,8 +1,6 @@
 # SempRecord - Your Favorite Worklogger
 
-SempRecord is a desktop application designed to help you record your work sessions without interrupting your workflow. 
-It allows you to choose which apps to record and optimizes the encoding profiles to create high-quality videos that take up less space on your hard drive. 
-With SempRecord, you can easily create timelapses of your workday that look like carefully edited videos.
+SempRecord is a desktop application that allows you to record your work sessions without interrupting your workflow. It optimizes the encoding profiles to create high-quality videos that take up less space on your hard drive. With SempRecord, you can easily create timelapses of your workday that look like carefully edited videos. It also provides a web interface to quickly search for projects in vast amounts of footage and a system tray utility to easily start/stop recording.
 
 
 ## Features

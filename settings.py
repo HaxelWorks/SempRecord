@@ -10,6 +10,21 @@ import win32api
 import win32con
 from typing import List
 
+# LIST OF SETTINGS
+RECORDING_DIR: str
+USE_BLACKLIST: bool
+BLACKLISTED_APPS: List[str]
+USE_AUTOSTART: bool
+USE_AUTOSTOP: bool
+AUTOSTART_APPS: List[str]
+AUTOSTART_OVERRIDES_BLACKLIST: bool
+INPUT_FPS: int
+OUTPUT_FPS: int
+THUMBNAIL_REDUCTION: int
+THUMBNAIL_INTERVAL: int
+
+
+
 # check if _MEIPASS exists, if so we are running this in a pyinstaller's onefile mode
 if hasattr(sys, '_MEIPASS'):
     meipass_root = pathlib.Path(sys._MEIPASS)
@@ -24,8 +39,6 @@ data_dir = pathlib.Path(data_dir)
 os.makedirs(data_dir, exist_ok=True) # Make sure the data directory exists
 SETTINGS_PATH = data_dir / "settings.yaml"
 
-# msg = os.listdir()
-# raise Exception(msg)
 
 if not os.path.isfile(SETTINGS_PATH):
    # If the settings file doesn't exist,

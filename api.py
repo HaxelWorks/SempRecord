@@ -83,7 +83,7 @@ def request_recordings():
     recordings = [str(p) for p in recdir.iterdir()]
     
     for record in recordings:
-        # get the metadata tsv file for each recording
+        # get the metadata tsv file for each recording-
         #remove the .mp4 from the record
         record = record.replace(".mp4", "")
         metadata_path = recdir / ".metadata" / f"{record}.tsv"

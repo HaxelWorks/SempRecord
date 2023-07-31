@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../../../../ProgramData/HaxelWerks/SempRecord"
+		},
+		{
+			"path": "../../../Videos/Records"
+		}
+	],
+	"settings": {
+		"workbench.colorCustomizations": {
+			"commandCenter.border": "#e7e7e799",
+			"sash.hoverBorder": "#d81818",
+			"tab.activeBorder": "#d81818",
+			"titleBar.activeBackground": "#aa1313",
+			"titleBar.activeForeground": "#e7e7e7",
+			"titleBar.inactiveBackground": "#aa131399",
+			"titleBar.inactiveForeground": "#e7e7e799"
+		},
+		"peacock.color": "#aa1313",
+		"powershell.cwd": "c:\\Users\\axel1\\Projects\\SempRecord"
+	}
+}

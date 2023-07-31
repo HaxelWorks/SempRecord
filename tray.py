@@ -17,6 +17,7 @@ def start():
 
 
 def stop():
+    TRAY.icon = ICONS.rendering
     recorder.stop()
     TRAY.icon = ICONS.inactive
     TRAY.menu = generate_menu(recording=False)
@@ -27,7 +28,7 @@ def pause():
     recorder.pause()
     TRAY.icon = ICONS.paused
     TRAY.menu = generate_menu(recording=True, paused=True)
-
+    TRAY.title = "SempRecord - Paused"
 def exit_program():
     stop()
     TRAY.stop()
@@ -42,7 +43,15 @@ def open_folder():
 def open_browser():
     os.startfile("http://localhost:5000/")
 
-
+trigger_state = False
+def trigger_clicked(icon, item):
+    global trigger_state
+    trigger_state = not item.checked
+    if trigger_state:
+        TRAY.icon = ICONS.standby
+    else:
+        TRAY.icon = ICONS.inactive
+ 
 def generate_menu(recording=False, paused=False):
     items = []
     if paused:
@@ -56,12 +65,13 @@ def generate_menu(recording=False, paused=False):
         ]
         items.extend(controls)
 
+    items.append(pystray.MenuItem("Auto Trigger", trigger_clicked, checked=lambda _:trigger_state))
     items.append(pystray.MenuItem("Open Folder", open_folder))
     items.append(pystray.MenuItem("Open Interface", open_browser))
     items.append(pystray.MenuItem("Exit", exit_program))
-    # add a menu entry that shows a radio button if the program is set to autostart or not
+    # add a menu entry that shows a radio button if the program is set to autotrigger or not
     # when checked it should run run_on_boot.enable() and when unchecked it should run run_on_boot.disable()
-    # the menu entry should be called "Autostart"
+    # the menu entry should be called "Autotrigger"
     
     
 

@@ -1,8 +1,10 @@
 from tkinter import Y
 from PIL import Image, ImageDraw
 
+
 SIZE = 32
-UPSAMPLE = 4
+SIZES = [256, 128, 64, 32]
+SSAA = 4 # super sampling anti aliasing
 TRANSP = (0, 0, 0, 0)
 RED = (234, 10, 3, 255)
 YELLOW = (255, 255, 0, 255)
@@ -10,6 +12,7 @@ GREEN = (0, 255, 0, 255)
 BLUE = (0, 0, 255, 255)
 GRAY = (52, 52, 52, 255)
 ORANGE = (255, 165, 0, 255)
+
 
 def icoratio(size: int):
     sizes = [285, 235, 176, 73]
@@ -19,9 +22,9 @@ def icoratio(size: int):
     return sizes
 
 
-def tray_icon_generator(size:int, color:tuple):
-    """Generates a tray icon using the cicle diameters from icoratio"""
-    size = size * UPSAMPLE
+def icon_generator(size:int, color:tuple):
+    """Generates an icon using the cicle diameters from icoratio"""
+    size = size * SSAA
     image = Image.new("RGBA", size=(size, size), color=TRANSP)
     draw = ImageDraw.Draw(image)
     d1,d2,d3,d4 =icoratio(size)
@@ -40,23 +43,20 @@ def tray_icon_generator(size:int, color:tuple):
     draw.ellipse((r1-r4, r1-r4, r1+r4, r1+r4), fill=TRANSP)
     
     # downsample the image
-    image = image.resize((size//UPSAMPLE, size//UPSAMPLE), resample=Image.LANCZOS)
+    image = image.resize((size//SSAA, size//SSAA), resample=Image.LANCZOS)
     return image
     
-
+    
 class ICONS:
-    active = tray_icon_generator(SIZE, RED)
-    paused = tray_icon_generator(SIZE, YELLOW)
-    standby = tray_icon_generator(SIZE, ORANGE)
-    inactive = tray_icon_generator(SIZE, GRAY)
-    rendering = tray_icon_generator(SIZE, BLUE)
+    active = icon_generator(SIZE, RED)
+    paused = icon_generator(SIZE, YELLOW)
+    standby = icon_generator(SIZE, ORANGE)
+    inactive = icon_generator(SIZE, GRAY)
+    rendering = icon_generator(SIZE, BLUE)
     
 if __name__ == "__main__":
-    # use pil to show the icons
-    # ICONS.standby.show()
-    # ICONS.paused.show()
-    # ICONS.inactive.show()
-    
-    ico = ICONS.active
-    # save the icon as icon.ico
+    # When running this file as a script, it will generate an icon containing the folloring resolutions:
+    muli_res = [icon_generator(size, RED) for size in SIZES]
+    ico_image = Image.new("RGBA", (256, 256), (255, 255, 255, 0))
+    ico_image.save("icon.ico", format="ICO",transparency=0, append_images=muli_res)
     

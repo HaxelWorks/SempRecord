@@ -19,7 +19,7 @@ def start():
 def stop():
     TRAY.icon = ICONS.rendering
     recorder.stop()
-    TRAY.icon = ICONS.inactive
+    TRAY.icon = ICONS.standby if trigger_state else ICONS.inactive
     TRAY.menu = generate_menu(recording=False)
     TRAY.title = "SempRecord - Stopped"
 

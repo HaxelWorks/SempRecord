@@ -10,6 +10,5 @@ ffmpeg-master-latest-win64-gpl*
 dist/
 build/
 frontend/public/build/
-
 ffmpeg.exe
-main.spec
+icon.ico

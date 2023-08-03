@@ -6,9 +6,18 @@ $settings = "default_settings.yaml"
 $ffmpeg = "ffmpeg.exe"
 $license = "LICENSE.txt"
 $icon = "icon.ico"
+
+# & ".\icon_generator.py"
+# Run icon_generator.py if icon.ico does not already exist
+if (!(Test-Path -Path ".\icon.ico")) {
+    & ".\icon_generator.py"
+}
+
+Remove-Item -Path ".\dist" -Recurse -Force
+
 $pyInstallerArgs = @(
     "--noconsole",
-    "--onefile",
+    # "--onedir",
     "--icon=icon.ico",
 
     # Data files

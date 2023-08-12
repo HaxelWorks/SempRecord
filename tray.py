@@ -1,11 +1,23 @@
-import pystray
 import os
-import recorder
-from icon_generator import ICONS
 from threading import Thread
 from time import sleep
-import settings
+
+import pystray
+from windows_toasts import ToastText1, WindowsToaster
+
+import recorder
 import run_on_boot
+import settings
+from icon_generator import ICONS
+
+
+def toast(message):
+    wintoaster = WindowsToaster('SempRecord')
+    newToast = ToastText1()
+    newToast.SetBody(message)
+    newToast.on_activated = lambda _: print('Toast clicked!')
+    wintoaster.show_toast(newToast)
+    
 # Create a menu with a Start/Stop and pause option
 # as well as the option to open a specific folder in the file explorer
 # and one that opens the management page in the browser
@@ -14,6 +26,7 @@ def start():
     TRAY.icon = ICONS.active
     TRAY.menu = generate_menu(recording=True)
     TRAY.title = "SempRecord - Recording"
+    toast('🔴 Recording started')
 
 
 def stop():
@@ -22,6 +35,7 @@ def stop():
     TRAY.icon = ICONS.standby if trigger_state else ICONS.inactive
     TRAY.menu = generate_menu(recording=False)
     TRAY.title = "SempRecord - Stopped"
+    toast('🎬 Recording ended')
 
 
 def pause():
@@ -29,6 +43,7 @@ def pause():
     TRAY.icon = ICONS.paused
     TRAY.menu = generate_menu(recording=True, paused=True)
     TRAY.title = "SempRecord - Paused"
+    toast('🟡 Recording paused')
 def exit_program():
     stop()
     TRAY.stop()
@@ -72,9 +87,6 @@ def generate_menu(recording=False, paused=False):
     # add a menu entry that shows a radio button if the program is set to autotrigger or not
     # when checked it should run run_on_boot.enable() and when unchecked it should run run_on_boot.disable()
     # the menu entry should be called "Autotrigger"
-    
-    
-
     return pystray.Menu(*items)
 
 
@@ -86,6 +98,16 @@ TRAY.run_detached()
 
 
 def tray_status_thread():
+    """
+    Continuously updates the title of the system tray icon with the current status of the recorder.
+
+    The function retrieves the status of the recorder every 10 seconds and extracts the following keys:
+    "frame", "size", "time", and "bitrate". If any of these keys are missing, the function skips the update.
+    Otherwise, it constructs a string with the values of these keys separated by newlines and sets it as the
+    title of the system tray icon.
+
+    This function runs indefinitely until the program is terminated.
+    """
     while True:
         sleep(10)
         if recorder.RECORDER is None:

@@ -1,4 +1,3 @@
-from tkinter import Y
 from PIL import Image, ImageDraw
 
 
@@ -15,11 +14,11 @@ ORANGE = (255, 165, 0, 255)
 
 
 def icoratio(size: int):
-    sizes = [285, 235, 176, 73]
+    magic_numbers = [285, 235, 176, 73]
     ratio = 256 / size
     factor = 256 / 285
-    sizes = [int((size/ratio) * factor) for size in sizes]
-    return sizes
+    magic_numbers = [int((size/ratio) * factor) for size in magic_numbers]
+    return magic_numbers
 
 
 def icon_generator(size:int, color:tuple):

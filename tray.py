@@ -10,32 +10,45 @@ import run_on_boot
 import settings
 from icon_generator import ICONS
 
+def exit_program():
+    stop()
+    TRAY.stop()
+    # exit the program
+    os._exit(0)
+    
+
+def open_folder(_=None):
+    os.startfile(str(settings.RECORDING_DIR))
+
+
+def open_browser():
+    os.startfile("http://localhost:5000/")
 
 def toast(message):
     wintoaster = WindowsToaster('SempRecord')
     newToast = ToastText1()
     newToast.SetBody(message)
-    newToast.on_activated = lambda _: print('Toast clicked!')
+    newToast.on_activated = open_folder
     wintoaster.show_toast(newToast)
     
 # Create a menu with a Start/Stop and pause option
 # as well as the option to open a specific folder in the file explorer
 # and one that opens the management page in the browser
 def start():
-    recorder.start()
+    name = recorder.start()
     TRAY.icon = ICONS.active
     TRAY.menu = generate_menu(recording=True)
     TRAY.title = "SempRecord - Recording"
-    toast('🔴 Recording started')
+    toast('🔴 Record started | '+name)
 
 
 def stop():
     TRAY.icon = ICONS.rendering
-    recorder.stop()
+    name = recorder.stop()
     TRAY.icon = ICONS.standby if trigger_state else ICONS.inactive
     TRAY.menu = generate_menu(recording=False)
     TRAY.title = "SempRecord - Stopped"
-    toast('🎬 Recording ended')
+    toast('🎬 Record saved | '+name)
 
 
 def pause():
@@ -44,19 +57,6 @@ def pause():
     TRAY.menu = generate_menu(recording=True, paused=True)
     TRAY.title = "SempRecord - Paused"
     toast('🟡 Recording paused')
-def exit_program():
-    stop()
-    TRAY.stop()
-    # exit the program
-    os._exit(0)
-    
-
-def open_folder():
-    os.startfile(str(settings.RECORDING_DIR))
-
-
-def open_browser():
-    os.startfile("http://localhost:5000/")
 
 trigger_state = False
 def trigger_clicked(icon, item):

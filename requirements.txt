@@ -2,6 +2,7 @@ pystray
 dxcam
 pyyaml
 flask
+requests
 Pillow
 numpy
 qoi

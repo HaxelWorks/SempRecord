@@ -1,13 +1,17 @@
+import datetime
 import os
 import threading
 from time import sleep
-import PIL
+
 import dxcam
 import ffmpeg
-import datetime
+import PIL
+
 import settings
+from filename_generator import generate_word
 from thumbnailer import ThumbnailProcessor
-from util import nvenc_available, getForegroundWindowTitle, isTriggerlisted, isBlacklisted
+from util import (getForegroundWindowTitle, isBlacklisted, isTriggerlisted,
+                  nvenc_available)
 
 CODEC = "h264_nvenc" if nvenc_available() else "libx264"
 CHANGE_THRESHOLD = 10_000  #sub-pixels
@@ -27,7 +31,7 @@ class Recorder:
         self.window_title = ''
         self.nframes = 0
         # generate a file name that looks like this: Wednesday 18 January 2023 HH;MM.mp4 
-        self.file_name = datetime.datetime.now().strftime("%A %d %B %Y %H;%M")
+        self.file_name = generate_word()+"-"+generate_word()
         if tag: self.file_name = f"{tag} - {self.file_name}"
         
         # create a metadata file we can append to with simple frame:window_title pairs
@@ -150,6 +154,7 @@ def start():
     if RECORDER is None: 
         RECORDER = Recorder(verbose=False)
         print("Started recording")
+        return RECORDER.file_name
     if RECORDER.paused:
         RECORDER.paused = False
         print("Resumed recording")
@@ -159,8 +164,10 @@ def stop():
     if RECORDER is None:
         return
     RECORDER.end_recording()
+    filename = RECORDER.file_name
     RECORDER = None
     print("Stopped recording")
+    return filename
 def pause():
     global RECORDER
     if RECORDER is None:

@@ -1,5 +1,5 @@
 $dot = "."
-$frontDir = "frontend/public/build"
+$frontDir = "frontend/public"
 $readme = "README.md"
 $readmeDst = "."
 $settings = "default_settings.yaml"

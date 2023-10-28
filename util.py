@@ -31,24 +31,36 @@ def nvenc_available() -> bool:
     finally:
         pynvml.nvmlShutdown()
 # ----------------------------------------------------------------------------- 
-import settings  
+from settings import settings
 
-def isBlacklisted(app_name: str) -> bool:
-    """Returns True if the app is blacklisted or no focus is on an app."""	
+def isWhiteListed(app_name: str) -> bool:
+    """Returns True if the app is whitelisted or no focus is on an app."""	
     if not app_name:
+        return False
+    if not settings.USE_WHITELIST:
         return True
-    for excl in settings.BLACKLISTED_APPS:
-        if app_name.endswith(excl):
+    for wl in settings.WHITELISTED_APPS + settings.AUTOTRIGGER_APPS:
+        if app_name.endswith(wl) or app_name.startswith(wl):
             return True
     return False 
 
 def isTriggerlisted(app_name: str) -> bool:
-    """Returns True if the app is blacklisted or no focus is on an app."""	
+    """Returns True if the app is whitelisted or no focus is on an app."""	
     if not app_name:
         return False
-    for incl in settings.AUTOSTART_APPS:
-        if app_name.endswith(incl):
+    for incl in settings.AUTOTRIGGER_APPS:
+        if app_name.endswith(incl) or app_name.startswith(incl):
             return True
     return False
 # ----------------------------------------------------------------------------- 
-
+# GENERATED CONSTANTS
+from ctypes import windll
+def get_desktop_resolution():
+    user32 = windll.user32
+    user32.SetProcessDPIAware()
+    screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+    return screensize
+def get_thumbnail_resolution():
+    x, y = get_desktop_resolution()
+    d = settings.THUMB_REDUCE_FACTOR
+    return (x // d, y // d)

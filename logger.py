@@ -2,8 +2,8 @@ import sys
 import logging
 from logging.handlers import RotatingFileHandler
 
-from settings import data_dir
-log_file = data_dir / "log.txt"
+from settings import settings
+log_file = settings.HOME_DIR / ".logs" / "log.txt"
 # Create a custom logging class that overrides the write method to use print
 class PrintLogger(logging.Logger):
     def write(self, msg):

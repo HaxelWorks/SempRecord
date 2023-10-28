@@ -1,7 +1,7 @@
 # flask api example
 from flask import Flask, jsonify, request
 from flask_restful import Resource, Api
-import settings
+from settings import settings
 import tray
 import recorder
 import csv
@@ -39,7 +39,7 @@ def static_proxy(path):
 
 @app.route("/api/status")
 def status():
-    if recorder.RECORDER is None:
+    if not recorder.is_recording():
         return jsonify({"status": "stopped"})
     else:
         return jsonify(recorder.RECORDER.get_status())
@@ -67,7 +67,7 @@ def pause():
 def request_thumbnails():
     """get the list of thumbnails"""    
     # read the thumbnails from the directory
-    path = settings.get_recording_dir() / ".thumbnails"
+    path = settings.HOME_DIR / ".thumbnails"
     thumbnails = [str(p) for p in path.iterdir()]
     return jsonify(thumbnails)
 
@@ -78,7 +78,7 @@ def request_thumbnails():
 @app.route("/api/recordings")
 def request_recordings():
     """get the list of recordings"""
-    recdir = settings.get_recording_dir()
+    recdir = settings.HOME_DIR / "Records"
     # read the recordings from the directory
     recordings = [str(p) for p in recdir.iterdir()]
     

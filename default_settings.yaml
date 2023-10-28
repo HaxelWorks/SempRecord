@@ -11,19 +11,19 @@ BLACKLISTED_APPS:
   - Spotify
   
 
-USE_AUTOSTART: True
+USE_AUTOTRIGGER: True
 USE_AUTOSTOP: True
-AUTOSTART_APPS:
+AUTOTRIGGER_APPS:
   - Visual Studio Code
   - Github Desktop
   - Autodesk Inventor Professional 2023
   - Blender
   - Ultimaker Cura
 
-AUTOSTART_OVERRIDES_BLACKLIST: True
+AUTOTRIGGER_OVERRIDES_BLACKLIST: True
 
 # ADVANCED SETTINGS
-INPUT_FPS: 15
+INPUT_FPS: 10
 OUTPUT_FPS: 60
 THUMBNAIL_REDUCTION: 4 # reduces thumbnail size 2560x1440 -> 640x360
 THUMBNAIL_INTERVAL: 150 # Every n seconds, record a second of thumbnail

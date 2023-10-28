@@ -7,9 +7,9 @@ from windows_toasts import ToastText1, WindowsToaster
 
 import recorder
 import run_on_boot
-import settings
+from settings import settings
 from icon_generator import ICONS
-
+import trigger
 def exit_program():
     stop()
     TRAY.stop()
@@ -17,8 +17,8 @@ def exit_program():
     os._exit(0)
     
 
-def open_folder(_=None):
-    os.startfile(str(settings.RECORDING_DIR))
+def open_folder():
+    os.startfile(str(settings.HOME_DIR))
 
 
 def open_browser():
@@ -58,14 +58,16 @@ def pause():
     TRAY.title = "SempRecord - Paused"
     toast('🟡 Recording paused')
 
-trigger_state = False
-def trigger_clicked(icon, item):
-    global trigger_state
-    trigger_state = not item.checked
-    if trigger_state:
+
+def flip_auto_trigger(icon, item):
+    state = not item.checked
+    settings.USE_AUTOTRIGGER = state
+    if state:
         TRAY.icon = ICONS.standby
+        trigger.trigger_enabled.set()
     else:
         TRAY.icon = ICONS.inactive
+        trigger.trigger_enabled.clear()
  
 def generate_menu(recording=False, paused=False):
     items = []
@@ -80,7 +82,7 @@ def generate_menu(recording=False, paused=False):
         ]
         items.extend(controls)
 
-    items.append(pystray.MenuItem("Auto Trigger", trigger_clicked, checked=lambda _:trigger_state))
+    items.append(pystray.MenuItem("Auto Trigger", flip_auto_trigger, checked=lambda _:settings.USE_AUTOTRIGGER))
     items.append(pystray.MenuItem("Open Folder", open_folder))
     items.append(pystray.MenuItem("Open Interface", open_browser))
     items.append(pystray.MenuItem("Exit", exit_program))
@@ -110,7 +112,7 @@ def tray_status_thread():
     """
     while True:
         sleep(10)
-        if recorder.RECORDER is None:
+        if not recorder.is_recording():
             continue
 
         status = recorder.RECORDER.get_status()

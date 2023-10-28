@@ -1,4 +1,4 @@
-import settings
+import precheck
 import logger
 import recorder
 import tray

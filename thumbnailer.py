@@ -1,25 +1,25 @@
 import PIL
 import numpy as np
 import ffmpeg
-import settings
+from settings import settings
 import qoi
 
 from queue import Queue
 from threading import Thread
 
-
+import util
 class ThumbnailProcessor:
     def __init__(self, file_name: str):
         """Create a thumbnail for the given file name."""
         self.frames_to_skip = settings.INPUT_FPS * settings.THUMBNAIL_INTERVAL
-        self.width, self.height = settings.THUMBNAIL_RES
+        self.width, self.height = util.get_thumbnail_resolution()
 
         self.saved_frames = 0
         self.fragments = 0
         self.queue = Queue()
-        self.qoi_cache_path = settings.RECORDING_DIR / ".cache"
+        self.qoi_cache_path = settings.HOME_DIR / ".cache"
         self.thumb_path = (
-            settings.RECORDING_DIR / ".thumbnails" / f"{file_name}.webp"
+            settings.HOME_DIR / ".thumbnails" / f"{file_name}.webp"
         )
 
         

@@ -7,13 +7,11 @@ import dxcam
 import ffmpeg
 import PIL
 
-import settings
-from filename_generator import generate_word
+from settings import settings
+from filename_generator import generate_filename
 from thumbnailer import ThumbnailProcessor
-from util import (getForegroundWindowTitle, isBlacklisted, isTriggerlisted,
-                  nvenc_available)
-
-CODEC = "h264_nvenc" if nvenc_available() else "libx264"
+import util
+CODEC = "h264_nvenc" if util.nvenc_available() else "libx264"
 CHANGE_THRESHOLD = 10_000  #sub-pixels
 FFPATH = r".\ffmpeg.exe"
 
@@ -31,21 +29,21 @@ class Recorder:
         self.window_title = ''
         self.nframes = 0
         # generate a file name that looks like this: Wednesday 18 January 2023 HH;MM.mp4 
-        self.file_name = generate_word()+"-"+generate_word()
+        self.file_name = generate_filename()
         if tag: self.file_name = f"{tag} - {self.file_name}"
         
         # create a metadata file we can append to with simple frame:window_title pairs
-        self.metadata_file = settings.RECORDING_DIR / ".metadata" / f"{self.file_name}.tsv"
+        self.metadata_file = settings.HOME_DIR / ".metadata" / f"{self.file_name}.tsv"
         self.metadata_file.touch()
         self.metadata_file = open(self.metadata_file,'a')
         self.thumbnail_generator = ThumbnailProcessor(self.file_name)
         
-        self.path = settings.RECORDING_DIR / f"{self.file_name}.mp4"
+        self.path = settings.HOME_DIR / "Records" /f"{self.file_name}.mp4"
         self.paused = False
         self.stop = threading.Event()
         
         # start ffmpeg
-        w,h = settings.DISPLAY_RES
+        w,h = util.get_desktop_resolution()
         self.ffprocess =(
             ffmpeg.input(
                 "pipe:",
@@ -88,13 +86,13 @@ class Recorder:
                 last_frame = frame
                 continue
             
-            window_title = getForegroundWindowTitle()
+            window_title = util.getForegroundWindowTitle()
             if window_title != self.window_title:
                 self.window_title = window_title
                 self.metadata_file.write(f"{self.nframes}\t{window_title}\n")
             
             
-            if isBlacklisted(window_title):
+            if not util.isWhiteListed(window_title):
                 continue
             if frameDiff(frame, last_frame) < CHANGE_THRESHOLD:
                 continue
@@ -149,19 +147,24 @@ class Recorder:
 
 # ==========INTERFACE==========
 RECORDER:Recorder = None
+def is_recording():
+    return RECORDER is not None
+
 def start():
     global RECORDER
-    if RECORDER is None: 
+    if not is_recording():
+        # Make a new recorder 
         RECORDER = Recorder(verbose=False)
         print("Started recording")
         return RECORDER.file_name
+    
     if RECORDER.paused:
         RECORDER.paused = False
         print("Resumed recording")
     
 def stop():
     global RECORDER
-    if RECORDER is None:
+    if not is_recording():
         return
     RECORDER.end_recording()
     filename = RECORDER.file_name
@@ -170,7 +173,7 @@ def stop():
     return filename
 def pause():
     global RECORDER
-    if RECORDER is None:
+    if not is_recording():
         return
     RECORDER.paused = True
     print("Paused recording")

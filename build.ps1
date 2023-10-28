@@ -2,7 +2,6 @@ $dot = "."
 $frontDir = "frontend/public"
 $readme = "README.md"
 $readmeDst = "."
-$settings = "default_settings.yaml"
 $ffmpeg = "ffmpeg.exe"
 $license = "LICENSE.txt"
 $icon = "icon.ico"
@@ -25,7 +24,6 @@ $pyInstallerArgs = @(
     "--add-data=$license;$dot",
     "--add-data=$frontDir;$frontDir",
     "--add-data=$readme;$dot",
-    "--add-data=$settings;$dot",
     # Binaries
     "--add-binary=$ffmpeg;$dot",
     "main.py"

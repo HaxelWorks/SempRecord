@@ -72,6 +72,7 @@ class ThumbnailProcessor:
                 r=settings.OUTPUT_FPS,
                 preset="text",
                 compression_level=6,
+                qscale=35,
                 loop=0,
             )
             .overwrite_output()

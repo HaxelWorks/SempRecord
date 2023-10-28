@@ -35,13 +35,22 @@ from settings import settings
 
 def isWhiteListed(app_name: str) -> bool:
     """Returns True if the app is whitelisted or no focus is on an app."""	
+    
     if not app_name:
         return False
+    
+    if settings.USE_BLACKLIST:
+        for bl in settings.BLACKLISTED_APPS:
+            if bl in app_name:
+                return False
+            
     if not settings.USE_WHITELIST:
         return True
+    
     for wl in settings.WHITELISTED_APPS + settings.AUTOTRIGGER_APPS:
         if app_name.endswith(wl) or app_name.startswith(wl):
             return True
+        
     return False 
 
 def isTriggerlisted(app_name: str) -> bool:

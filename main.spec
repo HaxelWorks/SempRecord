@@ -8,7 +8,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[('ffmpeg.exe', '.')],
-    datas=[('icon.ico', '.'), ('LICENSE.txt', '.'), ('frontend/public', 'frontend/public'), ('README.md', '.')],
+    datas=[('icon.ico', '.'), ('corpus.pkl', '.'), ('README.md', '.'), ('LICENSE.txt', '.'), ('frontend/public', 'frontend/public')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

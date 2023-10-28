@@ -1,12 +1,10 @@
 import os
 import pathlib
 
-
 import win32api
 import win32con
 
 from settings import settings
-
 
 # Create the HOME_DIR if it doesn't exist
 if not settings.HOME_DIR:

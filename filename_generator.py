@@ -1,14 +1,16 @@
 import pickle
 from random import choice    
 
-# load the corpus from the pickle file
-with open('corpus.pkl', 'rb') as f:
-    corpus = pickle.load(f)
-    verbs = corpus['verbs']
-    nouns = corpus['nouns']
-    adjs = corpus['adjectives']
 
 def generate_filename():
+
+    # load the corpus from the pickle file
+    with open('corpus.pkl', 'rb') as f:
+        corpus = pickle.load(f)
+        verbs = corpus['verbs']
+        nouns = corpus['nouns']
+        adjs = corpus['adjectives']
+        
     if choice([True, False]):
         return choice(adjs) + "_" + choice(nouns) + ".mp4"
     else:

@@ -1,10 +1,10 @@
 $dot = "."
-$frontDir = "frontend/public"
-$readme = "README.md"
-$readmeDst = "."
-$ffmpeg = "ffmpeg.exe"
-$license = "LICENSE.txt"
 $icon = "icon.ico"
+$corpus = "corpus.pkl"
+$readme = "README.md"
+$license = "LICENSE.txt"
+$frontDir = "frontend/public"
+$ffmpeg = "ffmpeg.exe"
 
 # & ".\icon_generator.py"
 # Run icon_generator.py if icon.ico does not already exist
@@ -16,14 +16,14 @@ Remove-Item -Path ".\dist" -Recurse -Force
 
 $pyInstallerArgs = @(
     "--noconsole",
-    # "--onedir",
     "--icon=icon.ico",
 
     # Data files
     "--add-data=$icon;$dot",
+    "--add-data=$corpus;$dot",
+    "--add-data=$readme;$dot",
     "--add-data=$license;$dot",
     "--add-data=$frontDir;$frontDir",
-    "--add-data=$readme;$dot",
     # Binaries
     "--add-binary=$ffmpeg;$dot",
     "main.py"
@@ -40,3 +40,7 @@ Move-Item -Path ".\Output\mysetup.exe" -Destination ".\dist\SempRecordInstaller.
 
 # Remove the Output folder
 Remove-Item -Path ".\Output" -Recurse
+
+# Install the executable
+& ".\dist\SempRecordInstaller.exe"
+

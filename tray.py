@@ -3,7 +3,7 @@ from threading import Thread
 from time import sleep
 
 import pystray
-from windows_toasts import ToastText1, WindowsToaster
+from windows_toasts import ToastText1, WindowsToaster, ToastButton
 
 import recorder
 import run_on_boot
@@ -11,8 +11,8 @@ from settings import settings
 from icon_generator import ICONS
 import trigger
 def exit_program():
-    stop()
-    TRAY.stop()
+    if recorder.is_recording():
+        stop()
     # exit the program
     os._exit(0)
     
@@ -28,7 +28,6 @@ def toast(message):
     wintoaster = WindowsToaster('SempRecord')
     newToast = ToastText1()
     newToast.SetBody(message)
-    newToast.on_activated = open_folder
     wintoaster.show_toast(newToast)
     
 # Create a menu with a Start/Stop and pause option
@@ -45,10 +44,14 @@ def start():
 def stop():
     TRAY.icon = ICONS.rendering
     name = recorder.stop()
-    TRAY.icon = ICONS.standby if trigger_state else ICONS.inactive
+    if settings.USE_AUTOTRIGGER:
+        TRAY.icon = ICONS.standby
+    else:
+        TRAY.icon = ICONS.inactive
+    
     TRAY.menu = generate_menu(recording=False)
     TRAY.title = "SempRecord - Stopped"
-    toast('🎬 Record saved | '+name)
+    toast('💾 Record saved | '+name)
 
 
 def pause():

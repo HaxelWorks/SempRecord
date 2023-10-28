@@ -2,8 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SempRecord"
-#define MyAppVersion "0.0"
-#define MyAppPublisher "HaxelWerks"
+#define MyAppVersion "0.1"
+#define MyAppPublisher "HaxelWorks"
 #define MyAppURL "https://www.example.com/"
 #define MyAppExeName "main.exe"
 

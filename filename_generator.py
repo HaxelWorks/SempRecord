@@ -12,9 +12,9 @@ def generate_filename():
         adjs = corpus['adjectives']
         
     if choice([True, False]):
-        return choice(adjs) + "_" + choice(nouns) + ".mp4"
+        return choice(adjs) + "_" + choice(nouns)
     else:
-        return choice(verbs) + "ing_" + choice(nouns) + ".mp4"
+        return choice(verbs) + "ing_" + choice(nouns)
     
     
 if __name__ == "__main__":

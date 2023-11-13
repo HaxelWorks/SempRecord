@@ -5,11 +5,11 @@ AUTOTRIGGER_APPS:
 - Cura
 - Autodesk Inventor Professional 2023
 BLACKLISTED_APPS:
-- ' YouTube '
+- YouTube
 - Porn
 - Gmail
 HOME_DIR: C:\Users\axel1\Videos\SempRecord
-INPUT_FPS: 10
+INPUT_FPS: 20
 OUTPUT_FPS: 60
 THUMBNAIL_INTERVAL: 150
 THUMB_REDUCE_FACTOR: 5

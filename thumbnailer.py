@@ -11,7 +11,7 @@ import util
 class ThumbnailProcessor:
     def __init__(self, file_name: str):
         """Create a thumbnail for the given file name."""
-        self.frames_to_skip = settings.INPUT_FPS * settings.THUMBNAIL_INTERVAL
+        self.frames_to_skip = settings.FRAME_RATE * settings.THUMBNAIL_INTERVAL
         self.width, self.height = util.get_thumbnail_resolution()
 
         self.saved_frames = 0
@@ -29,7 +29,7 @@ class ThumbnailProcessor:
     def keep_or_discard(self):
         """returns a generator that yields True or False, True if the frame should be kept, False if it should be discarded"""
         while True:
-            for i in range(settings.OUTPUT_FPS):
+            for i in range(settings.FRAME_RATE):
                 yield True
             for i in range(self.frames_to_skip):
                 yield False
@@ -69,10 +69,10 @@ class ThumbnailProcessor:
                 str(self.thumb_path),
                 pix_fmt="yuv420p",
                 vcodec="libwebp",
-                r=settings.OUTPUT_FPS,
+                r=settings.FRAME_RATE,
                 preset="text",
                 compression_level=6,
-                qscale=35,
+                qscale=25,
                 loop=0,
             )
             .overwrite_output()

@@ -1,40 +1,42 @@
 import os
-import appdirs
 import winshell
 import sys
+
+
 def startup_folder():
-    startup_folder = os.path.join(appdirs.user_data_dir(), "Microsoft", "Windows", "Start Menu", "Programs", "Startup")
+    """Returns the startup folder for the current user"""
+    return os.path.join(
+        os.getenv("APPDATA"),
+        "Microsoft",
+        "Windows",
+        "Start Menu",
+        "Programs",
+        "Startup",
+    )
+
+
+def main_folder():
+    """Returns the main folder where the program is installed"""
+    return os.path.dirname(os.path.realpath(sys.argv[0]))
+
+
 def enable():
-    # Get the path to the PyInstaller executable
-    executable_path = os.path.abspath(sys.executable)
+    """Creates a shortcut in the startup folder to the main folder"""
+    path = os.path.join(startup_folder(), "SempRecord.lnk")
+    target = os.path.join(main_folder(), "main.exe")
+    winshell.CreateShortcut(
+        Path=path,
+        Target=target,
+    )
 
-    # Get the path to the Startup folder for the current user
-    startup_folder = os.path.join(appdirs.user_data_dir(), "Microsoft", "Windows", "Start Menu", "Programs", "Startup")
 
-    # Create the Startup folder if it doesn't already exist
-    os.makedirs(startup_folder, exist_ok=True)
-
-    # Construct the path to the shortcut file in the Startup folder
-    shortcut_path = os.path.join(startup_folder, "SempRecord.lnk")
-
-    # Create the shortcut using the `winshell` library
-    with winshell.shortcut(shortcut_path) as shortcut:
-        shortcut.path = executable_path
-        shortcut.description = "SempRecord"
-        shortcut.write()
-        
 def disable():
-    # Get the path to the PyInstaller executable
-    executable_path = os.path.abspath(sys.executable)
+    """Removes the shortcut in the startup folder"""
+    path = os.path.join(startup_folder(), "SempRecord.lnk")
+    os.remove(path)
 
-    # Get the path to the Startup folder for the current user
-    startup_folder = os.path.join(appdirs.user_data_dir(), "Microsoft", "Windows", "Start Menu", "Programs", "Startup")
 
-    # Construct the path to the shortcut file in the Startup folder
-    shortcut_path = os.path.join(startup_folder, "SempRecord.lnk")
-    os.remove(shortcut_path)
-    
-    
 
 if __name__ == "__main__":
-    enable()
+    print(startup_folder())
+    print(main_folder())

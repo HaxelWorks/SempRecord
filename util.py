@@ -21,7 +21,7 @@ def nvenc_available() -> bool:
         deviceCount = pynvml.nvmlDeviceGetCount()
         for i in range(deviceCount):
             handle = pynvml.nvmlDeviceGetHandleByIndex(i)
-            enc_cap = pynvml.nvmlDeviceGetEncoderCapacity(handle, pynvml.NVML_ENCODER_QUERY_H264)
+            enc_cap = pynvml.nvmlDeviceGetEncoderCapacity(handle, pynvml.NVML_ENCODER_QUERY_HEVC)
             if enc_cap > 0:
                 return True
         return False
@@ -61,6 +61,10 @@ def isTriggerlisted(app_name: str) -> bool:
         if app_name.endswith(incl) or app_name.startswith(incl):
             return True
     return False
+
+
+
+
 # ----------------------------------------------------------------------------- 
 # GENERATED CONSTANTS
 from ctypes import windll

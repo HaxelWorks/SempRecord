@@ -7,22 +7,22 @@ from util import getForegroundWindowTitle, isTriggerlisted
 
 
 # ==========AUTO-TRIGGER==========
-trigger_enabled = threading.Event()
-
-if settings.USE_AUTOTRIGGER:
-    trigger_enabled.set()
-
-
 def trigger_thread(interval=10):
     """Automatically starts and stops recording based on the foreground window title."""
-
-    while True:
+    sleep(interval)
+    while settings.USE_AUTOTRIGGER:
         sleep(interval)
-        trigger_enabled.wait()
         window_title = getForegroundWindowTitle()
         if isTriggerlisted(window_title) and recorder.RECORDER is None:
             tray.start()
 
+def enable():
+    """start the recording trigger thread"""
+    settings.USE_AUTOTRIGGER = True
+    threading.Thread(target=trigger_thread, name="Auto Trigger Thread", daemon=True).start()
 
-# start the recording trigger thread
-threading.Thread(target=trigger_thread, name="Auto Trigger Thread", daemon=True).start()
+def disable():
+    """stop the recording trigger thread"""
+    settings.USE_AUTOTRIGGER = False
+
+enable()

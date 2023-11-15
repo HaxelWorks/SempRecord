@@ -68,10 +68,10 @@ def flip_auto_trigger(icon, item):
     settings.USE_AUTOTRIGGER = state
     if state:
         TRAY.icon = ICONS.standby if not recorder.is_recording() else ICONS.active
-        trigger.trigger_enabled.set()
+        trigger.enable()
     else:
         TRAY.icon = ICONS.inactive if not recorder.is_recording() else ICONS.active
-        trigger.trigger_enabled.clear()
+        trigger.disable()
  
 def flip_run_on_boot(icon, item):
     state = not item.checked

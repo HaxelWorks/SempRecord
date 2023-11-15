@@ -1,11 +1,12 @@
 import pickle
-from random import choice    
-
-
+from random import choice
+import os
+from pathlib import Path
+CORPUS_PATH = Path(__file__).resolve().with_name("corpus.pkl")
 def generate_filename():
-
+    # print the current working directory
     # load the corpus from the pickle file
-    with open('corpus.pkl', 'rb') as f:
+    with open(CORPUS_PATH, 'rb') as f:
         corpus = pickle.load(f)
         verbs = corpus['verbs']
         nouns = corpus['nouns']

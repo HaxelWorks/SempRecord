@@ -24,13 +24,10 @@ class Settings:
 
     def __init__(self):
         self.AUTOTRIGGER_APPS = [
-            "Google Chrome",
             "Visual Studio Code",
             "Blender",
             "Cura",
             "Autodesk Inventor Professional 2023",
-            "PotPlayer",
-            "Plex"
         ]
         self.WHITELISTED_APPS = []
         self.BLACKLISTED_APPS = ["YouTube", "Porn", "Gmail","F1 TV"]

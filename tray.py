@@ -1,7 +1,7 @@
 import os
 from threading import Thread
 from time import sleep
-
+import atexit
 import pystray
 from windows_toasts import ToastButton, ToastText1, WindowsToaster
 
@@ -12,11 +12,13 @@ from settings import settings
 import run_on_boot
 
 def exit_program():
+    print("Exiting safely...""")
     if recorder.is_recording():
         stop()
     # exit the program
     os._exit(0)
     
+atexit.register(exit_program)
 
 def open_folder():
     os.startfile(str(settings.HOME_DIR))

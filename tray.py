@@ -15,8 +15,7 @@ def exit_program():
     print("Exiting safely...""")
     if recorder.is_recording():
         stop()
-    # exit the program
-    os._exit(0)
+
     
 atexit.register(exit_program)
 
@@ -144,9 +143,9 @@ def tray_status_thread():
         TRAY.title = title
 
 
-status_thread = Thread(
-    target=tray_status_thread, daemon=True, name="Tray update status"
-).start()
+# status_thread = Thread(
+#     target=tray_status_thread, daemon=True, name="Tray update status"
+# ).start()
 
 
 if __name__ == "__main__":

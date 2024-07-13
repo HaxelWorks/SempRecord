@@ -22,7 +22,7 @@ def exit_program():
     os._exit(0)
     
 def open_folder():
-    os.startfile(str(settings.HOME_DIR))
+    os.startfile(str(settings.HOME_DIR / "Records"))
 
 
 def open_browser():

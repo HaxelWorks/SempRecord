@@ -1,6 +1,2 @@
-Make other API endpoints based on https://dark-space-2597.postman.co/workspace/SempRecord~f14ba370-d632-469c-8a3e-e7646b26c917/collection/5429704-60d112f7-c279-4dd5-9e6b-53d56443cab5?ctx=documentation
- - config
- - thumbnails
- - get recordings
-
-Message overlord Yordi if questions
+1. Despite many attempts, A console window still appears when ffmpeg starts encoding
+2. Opening whitelist gui while recording causes crash

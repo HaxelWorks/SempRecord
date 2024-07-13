@@ -1,7 +1,7 @@
 # flask api example
 from flask import Flask, jsonify, request
 from flask_restful import Resource, Api
-from settings import settings
+import settings
 import tray
 import recorder
 import csv

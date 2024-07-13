@@ -21,4 +21,3 @@ if __name__ == "__main__":
     # generate 20 filenames
     for i in range(20):
         print(generate_filename())
-        print('\n')

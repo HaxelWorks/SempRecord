@@ -1,7 +1,7 @@
 import PIL
 import numpy as np
 import ffmpeg
-from settings import settings
+import settings
 import qoi
 
 from queue import Queue
@@ -11,7 +11,7 @@ import util
 class ThumbnailProcessor:
     def __init__(self, file_name: str):
         """Create a thumbnail for the given file name."""
-        self.frames_to_skip = settings.FRAME_RATE * settings.THUMBNAIL_INTERVAL
+        self.frames_to_skip = settings.FRAME_RATE * settings.THUMBNAIL_SECONDS_INTERVAL
         self.width, self.height = util.get_thumbnail_resolution()
 
         self.saved_frames = 0
@@ -23,7 +23,7 @@ class ThumbnailProcessor:
         )
 
         
-        self.writer_thread = Thread(target=self.writer, name="QOI encoder")
+        self.writer_thread = Thread(target=self._writer_tread, name="QOI encoder")
         self.writer_thread.start()
 
     def keep_or_discard(self):
@@ -44,7 +44,7 @@ class ThumbnailProcessor:
         qoi.write(path, frame)
         self.saved_frames += 1
 
-    def writer(self):
+    def _writer_tread(self):
         """Becomes a thread that listens to the queue and saves the frames to the qoi cache"""
         kod = self.keep_or_discard()
         while (frame := self.queue.get()) is not None:

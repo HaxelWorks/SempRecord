@@ -36,7 +36,6 @@ def disable():
     os.remove(path)
 
 
-
 if __name__ == "__main__":
     print(startup_folder())
     print(main_folder())

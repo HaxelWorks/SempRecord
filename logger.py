@@ -2,13 +2,15 @@ import sys
 import logging
 from logging.handlers import RotatingFileHandler
 
-from settings import settings
-log_file = settings.HOME_DIR / ".logs" / "log.txt"
-# Create a custom logging class that overrides the write method to use print
+import settings
+log_path = settings.HOME_DIR / ".logs" / "log.txt"
 class PrintLogger(logging.Logger):
     def write(self, msg):
         if msg.rstrip() != "":
-            self.info(msg.rstrip())
+            stripped = msg.rstrip()
+            self.info(stripped)
+            
+            
     def flush(self):
         for handler in self.handlers:
             handler.flush()
@@ -21,7 +23,7 @@ log.setLevel(logging.DEBUG)
 # Create a RotatingFileHandler that rotates log files
 # when they reach a certain size, and keep a maximum
 # of 3 backup log files
-file_handler = RotatingFileHandler(log_file, maxBytes=20_000, backupCount=3)
+file_handler = RotatingFileHandler(log_path, maxBytes=20_000, backupCount=3)
 file_handler.setLevel(logging.DEBUG)
 log.addHandler(file_handler)
 

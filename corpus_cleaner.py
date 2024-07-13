@@ -1,6 +1,6 @@
 from math import pi
 import dolphin
-
+from time import sleep
 import pickle
 from icecream import ic
 from random import choice
@@ -8,6 +8,10 @@ import os
 from pathlib import Path
 from colorama import Fore, Style
 from tqdm import tqdm
+from rich.progress import track
+
+
+
 def print_red(text):
     print(f"{Fore.RED}{text}{Style.RESET_ALL}")
 
@@ -17,13 +21,6 @@ def print_green(text):
 
 
 CORPUS_PATH = Path(__file__).resolve().with_name("corpus.pkl")
-
-def generate_filename():
-    if choice([True, False]):
-        return choice(adjs) + "_" + choice(words)
-    else:
-        return choice(verbs) + "ing_" + choice(nouns)
-
 
 def word_cleaner(word):
     # if the word is longer than 8 characters
@@ -70,15 +67,15 @@ ic(len(adjs))
 
 def clean_wordlist(wordlist):
     cleaned_words = []
-    for word in wordlist:
+    for word in track(wordlist):
         output = dolphin.run(word)
         dolphin.flush()
         if "[PASS]" in output:
-            cleaned_words.append(word)
             print_green(f"{word} {output}")   
         elif "[FAIL]" in output:
             print_red(f"{word} {output}")
-            # pass
+            cleaned_words.append(word)
+            
         
         else:
             print("!!!Something went wrong entirely!!!")

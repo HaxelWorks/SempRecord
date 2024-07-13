@@ -1,3 +1,17 @@
+# SEMPRECORD BUILD SCRIPT FOR WINDOWS (POWERSHELL)
+
+# Check if the virtual environment exists
+if (!(Test-Path -Path ".\venv")) {
+    # Create the virtual environment
+    python -m venv venv
+    # Activate the virtual environment
+    & ".\venv\Scripts\activate"
+    # and install the requirements
+    pip install -r requirements.txt
+}
+
+
+# Set the variables
 $dot = "."
 $icon = "icon.ico"
 $corpus = "corpus.pkl"
@@ -6,7 +20,10 @@ $license = "LICENSE.txt"
 $frontDir = "frontend/public"
 $ffmpeg = "ffmpeg.exe"
 
-# & ".\icon_generator.py"
+# activate and use the virtual environment
+& ".\venv\Scripts\activate"
+
+
 # Run icon_generator.py if icon.ico does not already exist
 if (!(Test-Path -Path ".\icon.ico")) {
     & ".\icon_generator.py"

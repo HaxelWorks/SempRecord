@@ -1,12 +1,13 @@
-import threading
+import threading as tr
 from time import sleep
 
 import dxcam
 import ffmpeg
 
+import whitelisting
 import util
 from filename_generator import generate_filename
-from settings import settings
+import settings
 from thumbnailer import ThumbnailProcessor
 
 CODEC = "hevc_nvenc" if util.nvenc_available() else "libx264"
@@ -15,18 +16,35 @@ FFPATH = r".\ffmpeg.exe"
 
 
 def frameDiff(frame1, frame2):
+    # sample the frame at 1/10th of the resolution
+    # frame1 = frame1[::10, ::10]
+    # frame2 = frame2[::10, ::10]
+    
     diff = frame1 != frame2
     # summ the whole frame into one value
-    diff = diff.sum()
-    return diff
+    return diff.sum()
 
+def isWhiteListed(app_name: str) -> bool:
+    """Returns True if the app is whitelisted or no focus is on an app."""
+
+    if not app_name:
+        return False
+    
+    if not whitelisting.WHITELIST:
+        return False
+
+    for wl in whitelisting.WHITELIST:
+        if app_name.endswith(wl) or app_name.startswith(wl):
+            return True
+        
+    return False
 
 class Recorder:
     """Allows for continuous writing to a video file"""
 
-    def __init__(self, verbose=True):
+    def __init__(self):
         """Starts the recording process"""
-        self.debug = verbose
+        
         self.window_title = ""
         self.nframes = 0
         # generate a file name that looks like this: Wednesday 18 January 2023 HH;MM.mp4
@@ -40,8 +58,7 @@ class Recorder:
 
         self.path = settings.HOME_DIR / "Records" / f"{self.file_name}.mp4"
         self.paused = False
-        self.stop = threading.Event()
-
+        self.cut = False
         # start ffmpeg
         w, h = util.get_desktop_resolution()
         self.ffprocess = (
@@ -67,21 +84,24 @@ class Recorder:
         )
 
         # launch threads
-        self.record_thread = threading.Thread(
-            target=self.recording_thread, name="Recording Thread", daemon=True
-        )
-        self.status_thread = threading.Thread(
-            target=self._status_thread, name="Status Thread", daemon=True
-        )
+        self.end_record_flag = tr.Event()
+        self.record_thread = tr.Thread(
+            target=self._record_thread, name="Recording Thread")
+
+        self.end_status_flag = tr.Event()
+        self.status_thread = tr.Thread(
+            target=self._status_thread, name="Status Thread", daemon=True)
+
         self.record_thread.start()
         self.status_thread.start()
 
-    def recording_thread(self):
+    def _record_thread(self):
         cam = dxcam.create()
         cam.start(target_fps=settings.FRAME_RATE)
         old_frame = cam.get_latest_frame()
+        
+        while not self.end_record_flag.is_set():
 
-        while not self.stop.is_set():
             new_frame = cam.get_latest_frame()
             if self.paused:
                 old_frame = new_frame
@@ -92,7 +112,7 @@ class Recorder:
                 self.window_title = window_title
                 self.metadata_file.write(f"{self.nframes}\t{window_title}\n")
 
-            if not util.isWhiteListed(window_title):
+            if not isWhiteListed(window_title):
                 continue
             if frameDiff(new_frame, old_frame) < CHANGE_THRESHOLD:
                 continue
@@ -104,30 +124,30 @@ class Recorder:
             old_frame = new_frame
             self.nframes += 1
 
-        cam.stop()
         self.ffprocess.stdin.close()
         self.ffprocess.wait()
-
+        cam.stop()
+        print("FFmpeg process closed")
+        
     def _status_thread(self):
         self.status = ""
         buffer = b""
-        while not self.stop.is_set():
-            # we'd like to use readline but using \r as the delimiter
+
+        while not self.end_status_flag.is_set():
             new_stat = self.ffprocess.stderr.read1()
+            
             # split the status into lines
+            # we'd like to use readline but using \r as the delimiter
             new_stat = new_stat.split(b"\r")
             buffer += new_stat[0]
             if len(new_stat) > 1:
                 # if there is more than one line, the last line is the current status
                 self.status = buffer.decode("utf-8").strip()
-                if self.debug:
-                    print(self.status)
-
                 buffer = new_stat[-1]
-            sleep(0.5)
-
+    
+        
     def get_status(self):
-        if self.stop.is_set():
+        if self.cut:
             return {}
 
         raw_stat = self.status.split(sep="=")
@@ -142,24 +162,32 @@ class Recorder:
         return status
 
     def end_recording(self):
-        self.stop.set()
-        self.metadata_file.close()
+        self.cut = True
+        
+        # stop the status thread
+        self.end_status_flag.set()
+        self.end_record_flag.set()
+        
+        # process the thumbnail queue
+        print("Processing thumbnail")
         self.thumbnail_generator.render_webp_thumbnail()
-
+        self.metadata_file.close()
 
 # ==========INTERFACE==========
 RECORDER: Recorder = None
 
 
 def is_recording():
-    return RECORDER is not None
-
-
+    if RECORDER is None:
+        return False
+    if RECORDER.cut:
+        return False
+    return True
 def start():
     global RECORDER
     if not is_recording():
         # Make a new recorder
-        RECORDER = Recorder(verbose=False)
+        RECORDER = Recorder()
         print("Started recording")
         return RECORDER.file_name
 
@@ -174,8 +202,8 @@ def stop():
         return
     RECORDER.end_recording()
     filename = RECORDER.file_name
-    RECORDER = None
     print("Stopped recording")
+    RECORDER = None
     return filename
 
 
@@ -188,6 +216,6 @@ def pause():
 
 
 if __name__ == "__main__":
-    RECORDER = Recorder("debug", verbose=True)
+    RECORDER = Recorder()
     input("Press enter to stop recording")
     RECORDER.end_recording()

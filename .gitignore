@@ -13,3 +13,7 @@ frontend/public/build/
 ffmpeg.exe
 icon.ico
 english_corpus.txt
+cleaned_corpus.pkl
+corpus.pkl
+/venv
+/.vscode

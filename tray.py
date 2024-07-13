@@ -1,25 +1,26 @@
 import os
+import sys
 from threading import Thread
 from time import sleep
-import atexit
+
 import pystray
-from windows_toasts import ToastButton, ToastText1, WindowsToaster
+from windows_toasts import Toast, ToastButton, WindowsToaster
 
 import recorder
-import trigger
-from icon_generator import ICONS
-from settings import settings
 import run_on_boot
+import trigger
+import whitelisting
+from icon_generator import ICONS
+import settings
+
 
 def exit_program():
     print("Exiting safely...""")
     if recorder.is_recording():
         stop()
-    # exit the program
+    settings.save()
     os._exit(0)
     
-atexit.register(exit_program)
-
 def open_folder():
     os.startfile(str(settings.HOME_DIR))
 
@@ -29,8 +30,8 @@ def open_browser():
 
 def toast(message):
     wintoaster = WindowsToaster('SempRecord')
-    newToast = ToastText1()
-    newToast.SetBody(message)
+    newToast = Toast()
+    newToast.text_fields = [message]
     wintoaster.show_toast(newToast)
     
 # Create a menu with a Start/Stop and pause option
@@ -99,7 +100,7 @@ def generate_menu(recording=False, paused=False):
     pystray.MenuItem("Auto Trigger", flip_auto_trigger, checked=lambda _:settings.USE_AUTOTRIGGER),
     pystray.MenuItem("Run on boot", flip_run_on_boot, checked=lambda _:settings.RUN_ON_BOOT),
     pystray.MenuItem("Open Folder", open_folder),
-    pystray.MenuItem("Open Interface", open_browser),
+    pystray.MenuItem("Open Whitelist", whitelisting.open_window),
     pystray.MenuItem("Exit", exit_program)
     ])
 
@@ -126,22 +127,25 @@ def tray_status_thread():
     This function runs indefinitely until the program is terminated.
     """
     while True:
-        sleep(10)
+        sleep(5)
         if not recorder.is_recording():
             continue
 
         status = recorder.RECORDER.get_status()
-        # try to collect the following the following keys: frame, size, time, bitrate
+        if not status:
+            continue
         try:
+            # try to collect the following the following keys: frame, size, time, bitrate 
             frames = status["frame"]
             size = status["size"]
             time = status["time"]
             bitrate = status["bitrate"]
+        
+            # use newlines to separate the values
+            title = f"Frames: {frames}\nSize: {size}\nTime: {time}\nBitrate: {bitrate}"
+            TRAY.title = title
         except KeyError:
-            continue
-        # use newlines to separate the values
-        title = f"Frames: {frames}\nSize: {size}\nTime: {time}\nBitrate: {bitrate}"
-        TRAY.title = title
+            pass
 
 
 status_thread = Thread(

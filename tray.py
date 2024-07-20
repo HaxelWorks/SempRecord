@@ -9,7 +9,7 @@ from windows_toasts import Toast, ToastButton, WindowsToaster
 import recorder
 import run_on_boot
 import trigger
-import whitelisting
+import bouncer
 from icon_generator import ICONS
 import settings
 
@@ -100,7 +100,7 @@ def generate_menu(recording=False, paused=False):
     pystray.MenuItem("Auto Trigger", flip_auto_trigger, checked=lambda _:settings.USE_AUTOTRIGGER),
     pystray.MenuItem("Run on boot", flip_run_on_boot, checked=lambda _:settings.RUN_ON_BOOT),
     pystray.MenuItem("Open Folder", open_folder),
-    pystray.MenuItem("Open Whitelist", whitelisting.open_window),
+    pystray.MenuItem("Open Whitelist", bouncer.open_window, enabled=not recording),
     pystray.MenuItem("Exit", exit_program)
     ])
 

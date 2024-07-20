@@ -42,7 +42,7 @@ def create_folders():
 
 create_folders()
 try:
-    settings.load_settings()
+    settings.load()
 except FileNotFoundError:
     print("No settings file found. Creating a new one.")
-    settings.save_settings()
+    settings.save()

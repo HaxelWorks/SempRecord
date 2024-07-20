@@ -4,6 +4,7 @@ import threading
 import settings
 from time import sleep
 from util import getForegroundWindowTitle
+import bouncer
 
 
 # ==========AUTO-TRIGGER==========
@@ -14,7 +15,7 @@ def trigger_thread(interval=5):
     while settings.USE_AUTOTRIGGER:
         sleep(interval)
         window_title = getForegroundWindowTitle()
-        if recorder.isWhiteListed(window_title) and recorder.RECORDER is None:
+        if bouncer.isWhiteListed(window_title) and recorder.RECORDER is None:
             tray.start()
 
 def enable():

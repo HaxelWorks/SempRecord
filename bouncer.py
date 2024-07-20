@@ -1,3 +1,10 @@
+"""Decides which application get recorded based on whitelist and blacklist.
+An app is whitelisted if starts with or ends with a string in the whitelist.
+An app is blacklisted if it contains a string in the blacklist.
+Blacklist takes precedence over whitelist.
+If no app is focused, no app is recorded.
+"""
+
 from os import name
 from re import T
 import tkinter as tk
@@ -5,26 +12,59 @@ from tkinter import W, messagebox
 import threading
 from time import sleep
 from settings import HOME_DIR
+
 WHITELIST = tuple()
 BLACKLIST = tuple()
 
+
+def isWhiteListed(app_name: str) -> bool:
+    """Returns True if the app is whitelisted or no focus is on an app."""
+
+    if not app_name:
+        return False
+
+    if not WHITELIST:
+        return False
+
+    for wl in WHITELIST:
+        if app_name.endswith(wl) or app_name.startswith(wl):
+            return True
+
+    return False
+
+
+def isBlackListed(app_name: str) -> bool:
+    """Returns True if the app is blacklisted or no focus is on an app."""
+
+    if not app_name:
+        return False
+
+    if not BLACKLIST:
+        return False
+
+    for bl in BLACKLIST:
+        if bl in app_name:
+            return True
+
+    return False
+
+
 def update_lists():
     global WHITELIST, BLACKLIST
-    WHITELIST = whitelist_listbox.get(0, tk.END)
-    BLACKLIST = blacklist_listbox.get(0, tk.END)
+    wl = whitelist_listbox.get(0, tk.END)
+    bl = blacklist_listbox.get(0, tk.END)
     # cleanse the lists of trailing newline characters
-    WHITELIST = tuple([item.strip() for item in WHITELIST])
-    BLACKLIST = tuple([item.strip() for item in BLACKLIST])
+    WHITELIST = tuple([item.replace("\n", "") for item in wl])
+    BLACKLIST = tuple([item.replace("\n", "") for item in bl])
     print(WHITELIST, BLACKLIST)
 
 
-
 def save_lists():
-    with open(HOME_DIR/".settings"/"whitelist.txt", "w") as f:
+    with open(HOME_DIR / ".settings" / "whitelist.txt", "w") as f:
         for item in WHITELIST:
             f.write(item + "\n")
 
-    with open(HOME_DIR/".settings"/"blacklist.txt", "w") as f:
+    with open(HOME_DIR / ".settings" / "blacklist.txt", "w") as f:
         for item in BLACKLIST:
             f.write(item + "\n")
 
@@ -32,19 +72,18 @@ def save_lists():
 def load_lists():
     global WHITELIST, BLACKLIST
     try:
-        with open(HOME_DIR/".settings"/"whitelist.txt", "r") as f:
+        with open(HOME_DIR / ".settings" / "whitelist.txt", "r") as f:
             WHITELIST = tuple(f.readlines())
             WHITELIST = tuple([item.strip() for item in WHITELIST])
     except FileNotFoundError:
         WHITELIST = tuple()
 
     try:
-        with open(HOME_DIR/".settings"/"blacklist.txt", "r") as f:
+        with open(HOME_DIR / ".settings" / "blacklist.txt", "r") as f:
             BLACKLIST = tuple(f.readlines())
             BLACKLIST = tuple([item.strip() for item in BLACKLIST])
     except FileNotFoundError:
         BLACKLIST = tuple()
-    
 
 
 def add_to_list(listbox, entry):
@@ -163,6 +202,7 @@ def close_window():
     root.quit()
     root.destroy()
     root.update()
+
 
 load_lists()
 

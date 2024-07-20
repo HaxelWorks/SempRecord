@@ -4,7 +4,7 @@ from time import sleep
 import dxcam
 import ffmpeg
 
-import whitelisting
+import bouncer
 import util
 from filename_generator import generate_filename
 import settings
@@ -24,20 +24,7 @@ def frameDiff(frame1, frame2):
     # summ the whole frame into one value
     return diff.sum()
 
-def isWhiteListed(app_name: str) -> bool:
-    """Returns True if the app is whitelisted or no focus is on an app."""
 
-    if not app_name:
-        return False
-    
-    if not whitelisting.WHITELIST:
-        return False
-
-    for wl in whitelisting.WHITELIST:
-        if app_name.endswith(wl) or app_name.startswith(wl):
-            return True
-        
-    return False
 
 class Recorder:
     """Allows for continuous writing to a video file"""
@@ -112,7 +99,9 @@ class Recorder:
                 self.window_title = window_title
                 self.metadata_file.write(f"{self.nframes}\t{window_title}\n")
 
-            if not isWhiteListed(window_title):
+            if not bouncer.isWhiteListed(window_title):
+                continue
+            if bouncer.isBlackListed(window_title):
                 continue
             if frameDiff(new_frame, old_frame) < CHANGE_THRESHOLD:
                 continue

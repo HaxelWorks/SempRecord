@@ -1,6 +1,6 @@
 import precheck
 import logger
-import whitelisting
+import bouncer
 import recorder
 import tray
 import trigger

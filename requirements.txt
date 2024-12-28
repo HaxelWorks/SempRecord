@@ -14,3 +14,4 @@ flask_restful
 pynvml
 winshell
 Windows-Toasts
+lovely_logger

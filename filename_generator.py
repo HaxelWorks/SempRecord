@@ -19,5 +19,5 @@ def generate_filename():
     
 if __name__ == "__main__":
     # generate 20 filenames
-    for i in range(20):
+    for i in range(80):
         print(generate_filename())

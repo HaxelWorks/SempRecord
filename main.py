@@ -1,5 +1,4 @@
 import precheck
-import logger
 import bouncer
 import recorder
 import tray

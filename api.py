@@ -42,7 +42,7 @@ def status():
     if not recorder.is_recording():
         return jsonify({"status": "stopped"})
     else:
-        return jsonify(recorder.RECORDER.get_status())
+        return jsonify(recorder.REC.get_status())
 
 
 @app.route("/api/controls/start", methods=["POST"])

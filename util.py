@@ -7,6 +7,13 @@ import settings
 
 
 def getForegroundWindowTitle() -> Optional[str]:
+    """
+    Retrieves the title of the currently active foreground window.
+
+    Returns:
+        Optional[str]: The title of the foreground window, stripped of any non-ASCII characters.
+                       Returns None if the title cannot be retrieved.
+    """
     hWnd = windll.user32.GetForegroundWindow()
     length = windll.user32.GetWindowTextLengthW(hWnd)
     buf = create_unicode_buffer(length + 1)
@@ -20,6 +27,12 @@ def getForegroundWindowTitle() -> Optional[str]:
 
 
 def nvenc_available() -> bool:
+    """
+    Checks if NVENC (NVIDIA Encoder) is available on the system.
+
+    Returns:
+        bool: True if NVENC is available, False otherwise.
+    """
     try:
         pynvml.nvmlInit()
         deviceCount = pynvml.nvmlDeviceGetCount()
@@ -39,6 +52,12 @@ def nvenc_available() -> bool:
 
 
 def get_desktop_resolution():
+    """
+    Retrieves the resolution of the primary desktop screen.
+
+    Returns:
+        tuple: A tuple containing the width and height of the desktop screen.
+    """
     user32 = windll.user32
     user32.SetProcessDPIAware()
     screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
@@ -46,6 +65,13 @@ def get_desktop_resolution():
 
 
 def get_thumbnail_resolution():
+    """
+    Calculates the resolution for thumbnails based on the desktop resolution
+    and a reduction factor defined in settings.
+
+    Returns:
+        tuple: A tuple containing the width and height of the thumbnail.
+    """
     x, y = get_desktop_resolution()
     d = settings.THUMBNAIL_RESOLUTION_REDUCTION
     return (x // d, y // d)

@@ -5,10 +5,9 @@ Blacklist takes precedence over whitelist.
 If no app is focused, no app is recorded.
 """
 
-from os import name
-from re import T
+
 import tkinter as tk
-from tkinter import W, messagebox
+from tkinter import messagebox
 import threading
 from time import sleep
 from settings import HOME_DIR

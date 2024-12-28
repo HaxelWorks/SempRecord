@@ -1,3 +1,4 @@
+import os
 import threading as tr
 from time import sleep
 
@@ -11,7 +12,7 @@ import settings
 from thumbnailer import ThumbnailProcessor
 
 CODEC = "hevc_nvenc" if util.nvenc_available() else "libx264"
-CHANGE_THRESHOLD = 3000  # sub-pixels
+
 FFPATH = r".\ffmpeg.exe"
 
 
@@ -19,11 +20,10 @@ def frameDiff(frame1, frame2):
     # sample the frame at 1/10th of the resolution
     # frame1 = frame1[::10, ::10]
     # frame2 = frame2[::10, ::10]
-    
+
     diff = frame1 != frame2
     # summ the whole frame into one value
     return diff.sum()
-
 
 
 class Recorder:
@@ -31,7 +31,7 @@ class Recorder:
 
     def __init__(self):
         """Starts the recording process"""
-        
+
         self.window_title = ""
         self.nframes = 0
         # generate a file name that looks like this: Wednesday 18 January 2023 HH;MM.mp4
@@ -60,7 +60,7 @@ class Recorder:
                 str(self.path),
                 r=settings.FRAME_RATE,
                 vcodec=CODEC,
-                cq=35,
+                cq=settings.QUALITY,
                 preset="p5",
                 tune="hq",
                 weighted_pred=1,
@@ -73,11 +73,13 @@ class Recorder:
         # launch threads
         self.end_record_flag = tr.Event()
         self.record_thread = tr.Thread(
-            target=self._record_thread, name="Recording Thread")
+            target=self._record_thread, name="Recording Thread"
+        )
 
         self.end_status_flag = tr.Event()
         self.status_thread = tr.Thread(
-            target=self._status_thread, name="Status Thread", daemon=True)
+            target=self._status_thread, name="Status Thread", daemon=True
+        )
 
         self.record_thread.start()
         self.status_thread.start()
@@ -86,9 +88,8 @@ class Recorder:
         cam = dxcam.create()
         cam.start(target_fps=settings.FRAME_RATE)
         old_frame = cam.get_latest_frame()
-        
-        while not self.end_record_flag.is_set():
 
+        while not self.end_record_flag.is_set():
             new_frame = cam.get_latest_frame()
             if self.paused:
                 old_frame = new_frame
@@ -103,28 +104,31 @@ class Recorder:
                 continue
             if bouncer.isBlackListed(window_title):
                 continue
-            if frameDiff(new_frame, old_frame) < CHANGE_THRESHOLD:
+            if frameDiff(new_frame, old_frame) < settings.CHANGE_THRESHOLD:
                 continue
             # add the frame to the thumbnail generator
             self.thumbnail_generator.queue.put(new_frame)
 
             # Flush the frame to FFmpeg
-            self.ffprocess.stdin.write(old_frame.tobytes())  # write to pipe
-            old_frame = new_frame
-            self.nframes += 1
+            try:
+                self.ffprocess.stdin.write(old_frame.tobytes())  # write to pipe
+                old_frame = new_frame
+                self.nframes += 1
+            except os.error:
+                break
 
         self.ffprocess.stdin.close()
         self.ffprocess.wait()
         cam.stop()
-        print("FFmpeg process closed")
-        
+        print("FFmpeg process ended")
+
     def _status_thread(self):
         self.status = ""
         buffer = b""
 
         while not self.end_status_flag.is_set():
             new_stat = self.ffprocess.stderr.read1()
-            
+
             # split the status into lines
             # we'd like to use readline but using \r as the delimiter
             new_stat = new_stat.split(b"\r")
@@ -133,8 +137,7 @@ class Recorder:
                 # if there is more than one line, the last line is the current status
                 self.status = buffer.decode("utf-8").strip()
                 buffer = new_stat[-1]
-    
-        
+
     def get_status(self):
         if self.cut:
             return {}
@@ -152,59 +155,66 @@ class Recorder:
 
     def end_recording(self):
         self.cut = True
-        
+
         # stop the status thread
         self.end_status_flag.set()
         self.end_record_flag.set()
-        
+
         # process the thumbnail queue
         print("Processing thumbnail")
         self.thumbnail_generator.render_webp_thumbnail()
         self.metadata_file.close()
 
+
 # ==========INTERFACE==========
-RECORDER: Recorder = None
+REC: Recorder = None
 
 
-def is_recording():
-    if RECORDER is None:
+def is_recording() -> bool:
+    """Check if recording is currently active."""
+    if REC is None:
         return False
-    if RECORDER.cut:
+    if REC.cut:
         return False
     return True
-def start():
-    global RECORDER
+
+
+def start() -> str:
+    """Start or resume recording."""
+    global REC
     if not is_recording():
         # Make a new recorder
-        RECORDER = Recorder()
+        REC = Recorder()
         print("Started recording")
-        return RECORDER.file_name
+        return REC.file_name
 
-    if RECORDER.paused:
-        RECORDER.paused = False
+    if REC.paused:
+        REC.paused = False
         print("Resumed recording")
 
 
-def stop():
-    global RECORDER
+def stop() -> str:
+    """Stop the recording if it is active."""
+    global REC
     if not is_recording():
         return
-    RECORDER.end_recording()
-    filename = RECORDER.file_name
+    REC.end_recording()
+    filename = REC.file_name
     print("Stopped recording")
-    RECORDER = None
+    REC = None
     return filename
 
 
-def pause():
-    global RECORDER
+def pause() -> None:
+    """Pause the recording if it is active."""
+    global REC
     if not is_recording():
         return
-    RECORDER.paused = True
+    REC.paused = True
     print("Paused recording")
 
 
 if __name__ == "__main__":
-    RECORDER = Recorder()
+    REC = Recorder()
     input("Press enter to stop recording")
-    RECORDER.end_recording()
+    REC.end_recording()

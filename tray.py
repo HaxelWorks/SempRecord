@@ -13,14 +13,14 @@ import bouncer
 from icon_generator import ICONS
 import settings
 
-
 def exit_program():
     print("Exiting safely...""")
     if recorder.is_recording():
         stop()
     settings.save()
     os._exit(0)
-    
+ 
+
 def open_folder():
     os.startfile(str(settings.HOME_DIR / "Records"))
 
@@ -131,7 +131,7 @@ def tray_status_thread():
         if not recorder.is_recording():
             continue
 
-        status = recorder.RECORDER.get_status()
+        status = recorder.REC.get_status()
         if not status:
             continue
         try:
@@ -145,7 +145,7 @@ def tray_status_thread():
             title = f"Frames: {frames}\nSize: {size}\nTime: {time}\nBitrate: {bitrate}"
             TRAY.title = title
         except KeyError:
-            pass
+            break
 
 
 status_thread = Thread(

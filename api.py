@@ -84,8 +84,8 @@ def request_recordings():
     
     for record in recordings:
         # get the metadata tsv file for each recording-
-        #remove the .mp4 from the record
-        record = record.replace(".mp4", "")
+        #remove the .mkv from the record
+        record = record.replace(".mkv", "")
         metadata_path = recdir / ".metadata" / f"{record}.tsv"
         
         # read the metadata file

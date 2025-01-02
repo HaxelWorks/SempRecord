@@ -34,9 +34,9 @@ print(f"Loaded corpus in {perf_counter()-t0:.2f} seconds")
 
 def generate_filename():
     if choice([True, False]):
-        return choice(adj_list) + "_" + choice(noun_list) + ".mp4"
+        return choice(adj_list) + "_" + choice(noun_list) + ".mkv"
     else:
-        return choice(verb_list) + "ing_" + choice(noun_list) + ".mp4"
+        return choice(verb_list) + "ing_" + choice(noun_list) + ".mkv"
     
     
 

@@ -27,6 +27,7 @@ PrivilegesRequiredOverridesAllowed=commandline
 Compression=none
 OutputBaseFilename=mysetup
 WizardStyle=modern
+DisableDirPage=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -41,4 +42,3 @@ Source: "dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createal
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\main\{#MyAppExeName}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\\{#MyAppExeName}"; Tasks: desktopicon
-

@@ -10,20 +10,46 @@ import util
 from filename_generator import generate_filename
 import settings
 from thumbnailer import ThumbnailProcessor
-
-CODEC = "hevc_nvenc" if util.nvenc_available() else "libx264"
-
+import numpy as np
+CODEC = "hevc_nvenc" if util.nvenc_available() else "libx265"
 FFPATH = r".\ffmpeg.exe"
 
+def mkv_encoder(width, height, path):
+    return (
+            ffmpeg.input(
+                "pipe:",
+                format="rawvideo",
+                r=settings.FRAME_RATE,
+                pix_fmt="rgb24",
+                s=f"{width}x{height}",
+            )
+            .output(
+                str(path),
+                r=settings.FRAME_RATE,
+                vcodec=CODEC,
+                cq=settings.QUALITY,
+                preset="p5",
+                tune="hq",
+                weighted_pred=1,
+                pix_fmt="yuv444p",
+                movflags="faststart",
+                color_primaries="bt709",  # sRGB uses BT.709 primaries
+                color_trc="iec61966-2-1",  # sRGB transfer characteristics
+                colorspace="bt709",  # sRGB uses BT.709 colorspace
+                color_range="pc"  # Set color range to full
+            )
+            .run_async(pipe_stdin=True, pipe_stderr=True)
+        )
+    
 
-def frameDiff(frame1, frame2):
-    # sample the frame at 1/10th of the resolution
-    # frame1 = frame1[::10, ::10]
-    # frame2 = frame2[::10, ::10]
+def frameDiff(A:np.ndarray, B:np.ndarray):
+    # sample the frame at half the resolution
+    A = A[::2, ::2]
+    B = B[::2, ::2]
 
-    diff = frame1 != frame2
     # summ the whole frame into one value
-    return diff.sum()
+    diff = np.sum(A != B)
+    return diff
 
 
 class Recorder:
@@ -34,7 +60,7 @@ class Recorder:
 
         self.window_title = ""
         self.nframes = 0
-        # generate a file name that looks like this: Wednesday 18 January 2023 HH;MM.mp4
+        # generate a file name that looks like this: Wednesday 18 January 2023 HH;MM.mkv
         self.file_name = generate_filename()
 
         # create a metadata file we can append to with simple frame:window_title pairs
@@ -43,32 +69,12 @@ class Recorder:
         self.metadata_file = open(self.metadata_file, "a")
         self.thumbnail_generator = ThumbnailProcessor(self.file_name)
 
-        self.path = settings.HOME_DIR / "Records" / f"{self.file_name}.mp4"
+        self.path = settings.HOME_DIR / "Records" / f"{self.file_name}.mkv"
         self.paused = False
         self.cut = False
         # start ffmpeg
         w, h = util.get_desktop_resolution()
-        self.ffprocess = (
-            ffmpeg.input(
-                "pipe:",
-                format="rawvideo",
-                r=settings.FRAME_RATE,
-                pix_fmt="rgb24",
-                s=f"{w}x{h}",
-            )
-            .output(
-                str(self.path),
-                r=settings.FRAME_RATE,
-                vcodec=CODEC,
-                cq=settings.QUALITY,
-                preset="p5",
-                tune="hq",
-                weighted_pred=1,
-                pix_fmt="yuv420p",
-                movflags="faststart",
-            )
-            .run_async(pipe_stdin=True, pipe_stderr=True)
-        )
+        self.ffprocess = mkv_encoder(w, h, self.path)
 
         # launch threads
         self.end_record_flag = tr.Event()

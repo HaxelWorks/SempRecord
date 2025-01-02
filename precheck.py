@@ -17,7 +17,7 @@ def create_folders():
     - .metadata: saves changes in window focus as tsv files
     - .settings: saves multiple setting profiles as yaml files
     - .thumbnails: saves thumbnails as webp animations
-    - Records: saves the actual recordings as mp4 files
+    - Records: saves the actual recordings as mkv files
     """
     # Create the HOME_DIR if it doesn't exist
     if not settings.HOME_DIR:
